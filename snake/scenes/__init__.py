@@ -1,6 +1,3 @@
-# snake/scenes/board.py (sửa hàm __init__)
-
-# Thay thế dòng import
 import pygame
 import sys
 import random

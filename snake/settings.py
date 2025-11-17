@@ -13,4 +13,4 @@ COLOR_FOOD = (255, 0, 0)
 COLOR_GRID = (40, 40, 40)  # Màu đường lưới (tùy chọn)
 
 # Tốc độ game
-BASE_SPEED = 3
+BASE_SPEED = 5

@@ -1,7 +1,6 @@
 import pygame
 import sys
 from snake import settings as s
-from snake import save_manager
 from pathlib import Path
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"

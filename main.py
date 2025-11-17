@@ -3,7 +3,7 @@ import sys
 from snake import settings as s
 from snake.scenes.board import Board
 from snake.scenes.intro import Intro
-from snake import save_manager
+
 
 
 def main():
@@ -60,3 +60,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

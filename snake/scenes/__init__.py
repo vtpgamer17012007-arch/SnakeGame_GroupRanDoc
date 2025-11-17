@@ -2,7 +2,7 @@ import pygame
 import sys
 import random
 from snake import settings as s
-from snake import save_manager
+
 
 class Board:
     def __init__(self, screen):

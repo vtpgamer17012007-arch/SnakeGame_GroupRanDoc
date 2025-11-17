@@ -12,11 +12,13 @@ class Intro:
         self.screen = screen
         self.clock = pygame.time.Clock()
 
+        # Fonts
         self.font_title = pygame.font.SysFont('Arial', 60, bold=True)
         self.font_menu = pygame.font.SysFont('Arial', 40)
         self.font_input = pygame.font.SysFont('Arial', 30)
         self.font_button = pygame.font.SysFont('Arial', 30)
 
+        # Trạng thái
         self.running = True
         self.nickname = ""
         self.input_active = False
@@ -32,12 +34,14 @@ class Intro:
 
         self._define_layout()
 
+        # Tải ảnh
         try:
             img_panel = pygame.image.load(ASSETS_PATH / "grey_panel.png").convert_alpha()
             img_btn_green = pygame.image.load(ASSETS_PATH / "green_button00.png").convert_alpha()
             img_btn_blue = pygame.image.load(ASSETS_PATH / "blue_button00.png").convert_alpha()
             img_btn_red = pygame.image.load(ASSETS_PATH / "red_button00.png").convert_alpha()
 
+            # Lưu ảnh gốc đã resize về đúng kích thước nút
             self.img_input_bg = pygame.transform.scale(img_panel, self.input_rect.size)
             self.img_play_btn = pygame.transform.scale(img_btn_green, self.play_button_rect.size)
             self.img_ai_btn = pygame.transform.scale(img_btn_green, self.ai_button_rect.size)
@@ -50,7 +54,7 @@ class Intro:
         except FileNotFoundError as e:
             print(f"Lỗi: Không tìm thấy file ảnh! {e}")
             print(f"Hãy chắc chắn thư mục assets nằm ở: {ASSETS_PATH}")
-            # Tạo ảnh dự phòng (fallback) nếu không tìm thấy file
+            # Fallback (dự phòng)
             self.img_input_bg = pygame.Surface(self.input_rect.size); self.img_input_bg.fill((50, 50, 50))
             self.img_play_btn = pygame.Surface(self.play_button_rect.size); self.img_play_btn.fill((0, 150, 0))
             self.img_ai_btn = pygame.Surface(self.ai_button_rect.size); self.img_ai_btn.fill((0, 0, 150))
@@ -61,7 +65,6 @@ class Intro:
             self.img_prev_btn = pygame.Surface(self.prev_page_rect.size); self.img_prev_btn.fill((0, 0, 150))
 
     def _define_layout(self):
-        """Định nghĩa vị trí các thành phần UI."""
         center_x = s.SCREEN_WIDTH // 2
         center_y = s.SCREEN_HEIGHT // 2
 
@@ -70,11 +73,11 @@ class Intro:
         self.ai_button_rect = pygame.Rect(center_x - 150, center_y + 90, 300, 50)
         self.load_button_rect = pygame.Rect(center_x - 150, center_y + 160, 300, 50)
         self.back_button_rect = pygame.Rect(20, s.SCREEN_HEIGHT - 60, 100, 40)
+        
         self.next_page_rect = pygame.Rect(s.SCREEN_WIDTH - 60, center_y - 25, 50, 50)
         self.prev_page_rect = pygame.Rect(10, center_y - 25, 50, 50)
 
     def _build_current_page(self):
-        """Tạo danh sách Rects cho các save game trên trang hiện tại."""
         self.save_rects = []
         start_index = self.current_page * self.SAVES_PER_PAGE
         end_index = start_index + self.SAVES_PER_PAGE
@@ -85,7 +88,6 @@ class Intro:
             self.save_rects.append(rect)
 
     def _handle_input(self):
-        """Xử lý sự kiện (chuột, bàn phím)."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -139,6 +141,21 @@ class Intro:
                             self.selected_save = self.save_list[save_index]
                             self.running = False
 
+    def _draw_button_with_hover(self, image, rect):
+        """Hàm hỗ trợ: Vẽ nút và tự động phóng to nếu chuột đang hover."""
+        mouse_pos = pygame.mouse.get_pos()
+        if rect.collidepoint(mouse_pos):
+            # Phóng to x%
+            width = int(rect.width * 1.1)
+            height = int(rect.height * 1.1)
+            scaled_img = pygame.transform.scale(image, (width, height))
+            # Vẽ vào tâm của rect gốc (để tạo hiệu ứng bung ra từ giữa)
+            new_rect = scaled_img.get_rect(center=rect.center)
+            self.screen.blit(scaled_img, new_rect)
+        else:
+            # Vẽ bình thường
+            self.screen.blit(image, rect)
+
     def _draw_elements(self):
         """Vẽ các thành phần lên màn hình."""
         self.screen.fill(s.COLOR_BACKGROUND)
@@ -148,6 +165,7 @@ class Intro:
         self.screen.blit(title_text, title_rect)
 
         if not self.showing_load_menu:
+            # Input Box (Không cần hiệu ứng hover scale, chỉ đổi màu nền)
             self.screen.blit(self.img_input_bg, self.input_rect)
             input_surface = self.font_input.render(self.nickname, True, (255, 255, 255))
             self.screen.blit(input_surface, (self.input_rect.x + 15, self.input_rect.y + (self.input_rect.height - self.font_input.get_height()) // 2))
@@ -155,39 +173,46 @@ class Intro:
                 placeholder = self.font_input.render("Enter Nickname...", True, (150, 150, 150))
                 self.screen.blit(placeholder, (self.input_rect.x + 15, self.input_rect.y + (self.input_rect.height - self.font_input.get_height()) // 2))
 
-            self.screen.blit(self.img_play_btn, self.play_button_rect)
+            # Nút Play
+            self._draw_button_with_hover(self.img_play_btn, self.play_button_rect)
             play_text = self.font_menu.render("Player Play", True, (255, 255, 255))
             self.screen.blit(play_text, play_text.get_rect(center=self.play_button_rect.center))
 
-            self.screen.blit(self.img_ai_btn, self.ai_button_rect)
+            # Nút AI
+            self._draw_button_with_hover(self.img_ai_btn, self.ai_button_rect)
             ai_text = self.font_menu.render("AI Play", True, (255, 255, 255))
             self.screen.blit(ai_text, ai_text.get_rect(center=self.ai_button_rect.center))
 
-            self.screen.blit(self.img_load_btn, self.load_button_rect)
+            # Nút Load
+            self._draw_button_with_hover(self.img_load_btn, self.load_button_rect)
             load_text = self.font_menu.render("Load Game", True, (255, 255, 255))
             self.screen.blit(load_text, load_text.get_rect(center=self.load_button_rect.center))
 
         else:
+            # Danh sách Save
             start_index = self.current_page * self.SAVES_PER_PAGE
             for i, rect in enumerate(self.save_rects):
-                self.screen.blit(self.img_save_slot, rect)
+                # Áp dụng hover cho từng nút save
+                self._draw_button_with_hover(self.img_save_slot, rect)
                 save_name = self.save_list[start_index + i]
                 save_text = self.font_input.render(save_name, True, (255, 255, 255))
                 self.screen.blit(save_text, save_text.get_rect(center=rect.center))
 
-            self.screen.blit(self.img_back_btn, self.back_button_rect)
+            # Nút Back
+            self._draw_button_with_hover(self.img_back_btn, self.back_button_rect)
             back_text = self.font_button.render("Back", True, (255, 255, 255))
             self.screen.blit(back_text, back_text.get_rect(center=self.back_button_rect.center))
 
+            # Phân trang
             total_pages = (len(self.save_list) + self.SAVES_PER_PAGE - 1) // self.SAVES_PER_PAGE
 
             if self.current_page < total_pages - 1:
-                self.screen.blit(self.img_next_btn, self.next_page_rect)
+                self._draw_button_with_hover(self.img_next_btn, self.next_page_rect)
                 next_text = self.font_menu.render(">", True, (255, 255, 255))
                 self.screen.blit(next_text, next_text.get_rect(center=self.next_page_rect.center))
 
             if self.current_page > 0:
-                self.screen.blit(self.img_prev_btn, self.prev_page_rect)
+                self._draw_button_with_hover(self.img_prev_btn, self.prev_page_rect)
                 prev_text = self.font_menu.render("<", True, (255, 255, 255))
                 self.screen.blit(prev_text, prev_text.get_rect(center=self.prev_page_rect.center))
 

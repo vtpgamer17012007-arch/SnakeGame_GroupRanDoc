@@ -26,20 +26,14 @@ class Board:
         self.proposed_save_name = ""
         self.new_save_name = ""
         self.game_state_to_save = {}
+        
+        # Thay đổi: Dùng danh sách thay vì biến đơn
+        self.poops = [] 
 
         self.was_loaded_game = (initial_state is not None)
         self.save_name_if_loaded = save_name
         self.loaded_and_died_instantly = False
         self.first_frame = True
-
-        # True => snake is primarily horizontal (lying left-right)
-        # False => snake is primarily vertical (lying up-down)
-        # None => unknown (initial state before game reset/load)
-        self.snake_is_horizontal = None
-        # History of orientation values (True/False/None). Most recent appended at end.
-        # Keep it bounded to avoid unbounded memory growth.
-        self.snake_orientation_history = []
-        self._max_orientation_history = 1000
 
         self.snake_sprites = {}
         self._load_snake_sprites()
@@ -88,7 +82,7 @@ class Board:
 
             head_down_img = pygame.image.load(SPRITE_PATH / "head_down.png").convert_alpha()
             self.snake_sprites["head_down"] = pygame.transform.scale(head_down_img, size)
-            self.snake_sprites["head_up"] = pygame.transform.rotate(pygame.transform.scale(head_down_img, size), 180)  # Tự tạo
+            self.snake_sprites["head_up"] = pygame.transform.rotate(pygame.transform.scale(head_down_img, size), 180)
             self.snake_sprites["head_left"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_left.png").convert_alpha(), size)
             self.snake_sprites["head_right"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_right.png").convert_alpha(), size)
 
@@ -100,12 +94,13 @@ class Board:
             self.snake_sprites["body_vertical"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "body_vertical.png").convert_alpha(), size)
             self.snake_sprites["body_horizontal"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "body_horizontal.png").convert_alpha(), size)
 
-            self.snake_sprites["turn_UL"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_UL.png").convert_alpha(), size)  # Ảnh ╔
-            self.snake_sprites["turn_UR"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_UR.png").convert_alpha(), size)  # Ảnh ╗
-            self.snake_sprites["turn_DL"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_DL.png").convert_alpha(), size)  # Ảnh ╚
-            self.snake_sprites["turn_DR"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_DR.png").convert_alpha(), size)  # Ảnh ╝
+            self.snake_sprites["turn_UL"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_UL.png").convert_alpha(), size)
+            self.snake_sprites["turn_UR"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_UR.png").convert_alpha(), size)
+            self.snake_sprites["turn_DL"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_DL.png").convert_alpha(), size)
+            self.snake_sprites["turn_DR"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_DR.png").convert_alpha(), size)
 
             self.snake_sprites["food"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "food.png").convert_alpha(), size)
+            self.snake_sprites["poop"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "poop.png").convert_alpha(), size)
 
         except FileNotFoundError as e:
             print(f"Lỗi: Không tìm thấy file ảnh rắn! {e}")
@@ -121,7 +116,8 @@ class Board:
         self.score = game_state["score"]
         self.current_speed = game_state["speed"]
         self.nickname = game_state["nickname"]
-        self._update_orientation()
+        # Tải danh sách poop (mặc định là list rỗng nếu không có)
+        self.poops = game_state.get("poops", [])
 
     def _reset_game(self):
         """Khởi tạo hoặc reset lại trạng thái game."""
@@ -129,8 +125,9 @@ class Board:
         self.snake_pos = [(s.GRID_WIDTH // 2, s.GRID_HEIGHT // 2)]
         self.direction = (0, -1)
         self.current_speed = s.BASE_SPEED
+        self.poops = [] # Reset danh sách
         self._spawn_food()
-        self._update_orientation()
+        self._spawn_poop()
 
     def _spawn_food(self):
         """Tạo mồi ở vị trí ngẫu nhiên không trùng với rắn."""
@@ -141,42 +138,29 @@ class Board:
             )
             if self.food_pos not in self.snake_pos:
                 break
+    
+    def _spawn_poop(self):
+        """Tạo thêm 'Shit' vào danh sách (không trùng rắn/mồi/shit khác)."""
+        # Tỉ lệ xuất hiện (ví dụ 100% để test)
+        # if random.random() > 0.5: return
 
-    def _update_orientation(self):
-        """Cập nhật thuộc tính self.snake_is_horizontal."""
-        try:
-            if len(self.snake_pos) > 1:
-                head = self.snake_pos[0]
-                second = self.snake_pos[1]
-                vec = (second[0] - head[0], second[1] - head[1])
-                self.snake_is_horizontal = (vec[0] != 0)
-            else:
-                self.snake_is_horizontal = (self.direction[0] != 0)
-        except Exception:
-            self.snake_is_horizontal = None
+        while True:
+            pos = (
+                random.randint(0, s.GRID_WIDTH - 1),
+                random.randint(0, s.GRID_HEIGHT - 1)
+            )
+            
+            # Lấy danh sách vị trí các poop hiện tại
+            existing_poops = [p['pos'] for p in self.poops]
 
-        try:
-            self.snake_orientation_history.append(self.snake_is_horizontal)
-            if len(self.snake_orientation_history) > self._max_orientation_history:
-                excess = len(self.snake_orientation_history) - self._max_orientation_history
-                if excess >= len(self.snake_orientation_history):
-                    self.snake_orientation_history = []
-                else:
-                    del self.snake_orientation_history[0:excess]
-        except Exception:
-            pass
-
-    def get_orientation_history(self, last_n=None):
-        """Return the orientation history. If last_n is provided, return only the last N entries."""
-        if last_n is None:
-            return list(self.snake_orientation_history)
-        if last_n <= 0:
-            return []
-        return list(self.snake_orientation_history[-last_n:])
-
-    def clear_orientation_history(self):
-        """Clear recorded orientation history."""
-        self.snake_orientation_history.clear()
+            # Kiểm tra trùng
+            if (pos not in self.snake_pos and 
+                pos != self.food_pos and 
+                pos not in existing_poops):
+                
+                # Thêm poop mới (age=0)
+                self.poops.append({'pos': pos, 'age': 0})
+                break
 
     def _handle_input(self):
         """Xử lý điều khiển của người chơi."""
@@ -217,18 +201,39 @@ class Board:
                 self.loaded_and_died_instantly = True
             return
 
-        self.snake_pos.insert(0, new_head)
+        self.snake_pos.insert(0, new_head) # Chỉ insert 1 lần
 
+        # Kiểm tra ăn Mồi
         if new_head == self.food_pos:
             self.score += 1
             self._spawn_food()
+            
+            # Tăng tuổi thọ poop và xóa poop già (>5 lượt)
+            for p in self.poops:
+                p['age'] += 1
+            self.poops = [p for p in self.poops if p['age'] < 5]
+            
+            # Sinh poop mới
+            self._spawn_poop()
+            
+        # Kiểm tra ăn Poop (so sánh với tất cả poop trong list)
+        elif any(p['pos'] == new_head for p in self.poops):
+            # Xóa cục poop bị ăn
+            self.poops = [p for p in self.poops if p['pos'] != new_head]
+            
+            # Giảm độ dài rắn
+            self.snake_pos.pop() 
+            if len(self.snake_pos) > 1:
+                self.snake_pos.pop()
+            
+            self.score = max(0, self.score - 2) 
+            
         else:
+            # Di chuyển bình thường
             self.snake_pos.pop()
 
-        self._update_orientation()
-
     def _draw_elements(self):
-        """Vẽ mọi thứ lên màn hình (phiên bản Sprite Directional)."""
+        """Vẽ mọi thứ lên màn hình (phiên bản Sprite Directional CHÍNH XÁC)."""
         self.screen.fill(s.COLOR_BACKGROUND)
 
         for index, pos in enumerate(self.snake_pos):
@@ -253,45 +258,54 @@ class Board:
             else:
                 prev_pos = self.snake_pos[index - 1]
                 next_pos = self.snake_pos[index + 1]
-                
-                # vec_prev: Vector TỪ đốt phía đầu TỚI đốt hiện tại
-                vec_prev = (pos[0] - prev_pos[0], pos[1] - prev_pos[1])
-                # vec_next: Vector TỪ đốt hiện tại TỚI đốt phía đuôi
-                vec_next = (next_pos[0] - pos[0], next_pos[1] - pos[1])
 
+                vec_prev = (pos[0] - prev_pos[0], pos[1] - prev_pos[1])   # hướng từ prev -> current (vào)
+                vec_next = (next_pos[0] - pos[0], next_pos[1] - pos[1])   # hướng từ current -> next (ra)
+
+                # nếu hai vector giống nhau => thẳng
                 if vec_prev == vec_next:
-                    if vec_prev == (1, 0) or vec_prev == (-1, 0):
+                    if vec_prev in ((1, 0), (-1, 0)):
                         sprite = self.snake_sprites["body_horizontal"]
                     else:
                         sprite = self.snake_sprites["body_vertical"]
+
                 else:
-                    vecs = {vec_prev, vec_next}
+                    # DEBUG: bật True để in ra thông tin khi mapping không khớp
+                    DEBUG_TURNS = False
+                    # Giới hạn số dòng debug in ra để không spam console
+                    if not hasattr(self, "_turn_debug_count"):
+                        self._turn_debug_count = 0
 
-                    if self.snake_is_horizontal is False:
-                        if vecs == {(1, 0), (0, 1)}:  # (Right, Down)
-                            sprite = self.snake_sprites["turn_DL"]
-                        elif vecs == {(-1, 0), (0, 1)}:  # (Left, Down)
-                            sprite = self.snake_sprites["turn_DR"]
-                        elif vecs == {(1, 0), (0, -1)}:  # (Right, Up)
-                            sprite = self.snake_sprites["turn_UL"]
-                        elif vecs == {(-1, 0), (0, -1)}:  # (Left, Up)
-                            sprite = self.snake_sprites["turn_UR"]
+                    # mapping có thứ tự: (vec_prev, vec_next) -> sprite_key
+                    turn_map = {
+                        # Dưới -> Trái ; Phải -> Lên
+                        ((0, 1), (-1, 0)): "turn_DL",
+                        ((1, 0), (0, -1)): "turn_DL",
 
-                    elif self.snake_is_horizontal:
-                        if vecs == {(1, 0), (0, 1)}:  # (Phải, Xuống) -> Cần ảnh ╔
-                            sprite = self.snake_sprites["turn_UR"]
-                        elif vecs == {(-1, 0), (0, 1)}:  # (Trái, Xuống) -> Cần ảnh ╗
-                            sprite = self.snake_sprites["turn_UL"]
-                        elif vecs == {(1, 0), (0, -1)}:  # (Phải, Lên) -> Cần ảnh ╚
-                            sprite = self.snake_sprites["turn_DR"]
-                        elif vecs == {(-1, 0), (0, -1)}:  # (Trái, Lên) -> Cần ảnh ╝
-                            sprite = self.snake_sprites["turn_DL"]
+                        # Dưới -> Phải ; Trái -> Lên
+                        ((0, 1), (1, 0)): "turn_DR",
+                        ((-1, 0), (0, -1)): "turn_DR",
 
-                    if sprite is None:
-                        if vec_prev[0] != 0:
-                            sprite = self.snake_sprites["body_horizontal"]
-                        else:
-                            sprite = self.snake_sprites["body_vertical"]
+                        # Trên -> Trái ; Phải -> Xuống
+                        ((0, -1), (-1, 0)): "turn_UL",
+                        ((1, 0), (0, 1)): "turn_UL",
+
+                        # Trên -> Phải ; Trái -> Xuống
+                        ((0, -1), (1, 0)): "turn_UR",
+                        ((-1, 0), (0, 1)): "turn_UR",
+                    }
+
+                    sprite_key = turn_map.get((vec_prev, vec_next), None)
+
+                    if sprite_key:
+                        sprite = self.snake_sprites.get(sprite_key, None)
+                    else:
+                        # Nếu không khớp mapping (trường hợp bất ngờ), in debug một vài dòng để kiểm tra
+                        sprite = self.snake_sprites.get("body_vertical", None)
+                        if DEBUG_TURNS and self._turn_debug_count < 200:
+                            print(f"[TURN DEBUG] idx={index} pos={pos} prev={prev_pos} next={next_pos} "
+                                f"vec_prev={vec_prev} vec_next={vec_next} -> NO MATCH")
+                            self._turn_debug_count += 1
 
             if sprite:
                 self.screen.blit(sprite, rect)
@@ -303,6 +317,17 @@ class Board:
             s.GRID_SIZE
         )
         self.screen.blit(self.snake_sprites["food"], food_rect)
+
+        # Vẽ danh sách Poop
+        for p in self.poops:
+            pos = p['pos']
+            poop_rect = pygame.Rect(
+                pos[0] * s.GRID_SIZE,
+                pos[1] * s.GRID_SIZE,
+                s.GRID_SIZE,
+                s.GRID_SIZE
+            )
+            self.screen.blit(self.snake_sprites["poop"], poop_rect)
 
         score_text = self.font.render(f"{self.nickname} Score: {self.score}", True, (255, 255, 255))
         self.screen.blit(score_text, (5, 5))
@@ -436,6 +461,7 @@ class Board:
                             "snake_pos": self.snake_pos,
                             "direction": self.direction,
                             "food_pos": self.food_pos,
+                            "poops": self.poops, # SỬA: Lưu cả danh sách poop
                             "score": self.score,
                             "speed": self.current_speed,
                             "nickname": self.nickname

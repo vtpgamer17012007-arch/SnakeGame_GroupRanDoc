@@ -25,11 +25,22 @@ class Intro:
 
         self.selected_mode = None
         self.selected_save = None
+         # --- AVATAR ---
+        self.current_avatar_index = 0
+        self.selected_avatar_name = s.DEFAULT_AVATAR
+        self.avatar_images = self._load_avatars() # Tải trước tất cả avatar
+        # --------------
 
         self.SAVES_PER_PAGE = 5
         self.current_page = 0
 
         self._define_layout()
+        
+        
+        # Tải ảnh cho nút điều khiển avatar (Giả sử bạn có ảnh cho nút trái/phải)
+        img_arrow = pygame.image.load(ASSETS_PATH / "grey_panel.png").convert_alpha() # Dùng tạm panel
+        self.img_arrow_left = pygame.transform.scale(img_arrow, (35, 35))
+        self.img_arrow_right = pygame.transform.scale(img_arrow, (35, 35))
 
         try:
             img_panel = pygame.image.load(ASSETS_PATH / "grey_panel.png").convert_alpha()
@@ -71,6 +82,13 @@ class Intro:
         self.back_button_rect = pygame.Rect(20, s.SCREEN_HEIGHT - 60, 100, 40)
         self.next_page_rect = pygame.Rect(s.SCREEN_WIDTH - 60, center_y - 25, 50, 50)
         self.prev_page_rect = pygame.Rect(10, center_y - 25, 50, 50)
+        # --- AVATAR UI ---
+        # Khung chứa avatar
+        self.avatar_rect = pygame.Rect(center_x - 40, center_y - 140, 80, 80) 
+        # Nút chuyển trái
+        self.avatar_left_rect = pygame.Rect(center_x - 100, center_y - 120, 40, 40)
+        # Nút chuyển phải
+        self.avatar_right_rect = pygame.Rect(center_x + 60, center_y - 120, 40, 40)
 
     def _build_current_page(self):
         """Tạo danh sách Rects cho các save game trên trang hiện tại."""
@@ -116,6 +134,15 @@ class Intro:
                         self.save_list = save_manager.get_save_list()
                         self.current_page = 0
                         self._build_current_page()
+                    num_avatars = len(s.AVATAR_LIST)
+                    
+                    if self.avatar_left_rect.collidepoint(event.pos):
+                        self.current_avatar_index = (self.current_avatar_index - 1) % num_avatars
+                        self.selected_avatar_name = s.AVATAR_LIST[self.current_avatar_index]
+
+                    if self.avatar_right_rect.collidepoint(event.pos):
+                        self.current_avatar_index = (self.current_avatar_index + 1) % num_avatars
+                        self.selected_avatar_name = s.AVATAR_LIST[self.current_avatar_index]
 
             else:
                 if mouse_clicked:
@@ -165,6 +192,22 @@ class Intro:
             self.screen.blit(self.img_load_btn, self.load_button_rect)
             load_text = self.font_menu.render("Load Game", True, (255, 255, 255))
             self.screen.blit(load_text, load_text.get_rect(center=self.load_button_rect.center))
+            # --- Vẽ Avatar UI ---
+            current_avatar_img = self.avatar_images[self.selected_avatar_name]
+            self.screen.blit(current_avatar_img, self.avatar_rect)
+            
+            # Vẽ nền (optional) và nút mũi tên
+            pygame.draw.rect(self.screen, (255, 255, 255), self.avatar_rect, 2)
+            
+            self.screen.blit(self.img_arrow_left, self.avatar_left_rect)
+            self.screen.blit(self.img_arrow_right, self.avatar_right_rect)
+
+            # Vẽ mũi tên trên nút
+            arrow_font = self.font_menu.render("<", True, (0, 0, 0))
+            self.screen.blit(arrow_font, arrow_font.get_rect(center=self.avatar_left_rect.center))
+            arrow_font = self.font_menu.render(">", True, (0, 0, 0))
+            self.screen.blit(arrow_font, arrow_font.get_rect(center=self.avatar_right_rect.center))
+            # --------------------
 
         else:
             start_index = self.current_page * self.SAVES_PER_PAGE
@@ -192,6 +235,21 @@ class Intro:
 
         pygame.display.update()
 
+    def _load_avatars(self):
+        """Tải và trả về dictionary chứa tất cả avatar."""
+        avatars = {}
+        size = (80, 80) # Kích thước hiển thị avatar
+        for name in s.AVATAR_LIST:
+            try:
+                img = pygame.image.load(ASSETS_PATH / name).convert_alpha()
+                avatars[name] = pygame.transform.scale(img, size)
+            except FileNotFoundError as e:
+                print(f"Lỗi: Không tìm thấy file avatar {name}. Dùng ảnh placeholder.")
+                # Tạo ảnh placeholder nếu không tìm thấy
+                placeholder = pygame.Surface(size); placeholder.fill((100, 100, 100))
+                avatars[name] = placeholder
+        return avatars
+
     def run(self):
         """Vòng lặp chính của màn hình intro."""
         while self.running:
@@ -199,4 +257,4 @@ class Intro:
             self._draw_elements()
             self.clock.tick(30)
 
-        return self.selected_mode, self.nickname, self.selected_save
+        return self.selected_mode, self.nickname, self.selected_save, self.selected_avatar_name

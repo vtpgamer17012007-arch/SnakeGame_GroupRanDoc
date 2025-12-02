@@ -103,6 +103,18 @@ SAVE_DIR = "saves"  # Thư mục lưu trò chơi
 SAVE_FILE_EXTENSION = ".json"  # Định dạng file lưu
 
 # =====================================================
+# CẤU HÌNH AVATAR
+# =====================================================
+AVATAR_LIST = [
+    "avatar1.png",
+    "avatar2.png",
+    "avatar3.png",
+    "avatar4.png",
+    "avatar5.png",
+]
+DEFAULT_AVATAR = AVATAR_LIST[0]
+
+# =====================================================
 # CẤU HÌNH AI/DQN (nếu sử dụng)
 # =====================================================
 # Các giá trị này sử dụng cho agent DQN

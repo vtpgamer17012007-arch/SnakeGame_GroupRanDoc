@@ -8,7 +8,7 @@ ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
 
 class Board:
-    def __init__(self, screen, nickname, initial_state=None, save_name=None):
+    def __init__(self, screen, nickname, avatar_name, initial_state=None, save_name=None):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
@@ -25,6 +25,11 @@ class Board:
         self.proposed_save_name = ""
         self.new_save_name = ""
         self.game_state_to_save = {}
+
+        # --- AVATAR ---
+        self.avatar_name = avatar_name
+        self.avatar_img = self._load_selected_avatar()
+        # --------------
 
         self.was_loaded_game = (initial_state is not None)
         self.save_name_if_loaded = save_name
@@ -120,6 +125,10 @@ class Board:
         self.score = game_state["score"]
         self.current_speed = game_state["speed"]
         self.nickname = game_state["nickname"]
+        # --- Tải Avatar ---
+        self.avatar_name = game_state.get("avatar", s.DEFAULT_AVATAR) # Lấy avatar từ save, nếu không có thì dùng mặc định
+        self.avatar_img = self._load_selected_avatar()
+        # ------------------
         self._update_orientation()
 
     def _reset_game(self):
@@ -302,9 +311,15 @@ class Board:
             s.GRID_SIZE
         )
         self.screen.blit(self.snake_sprites["food"], food_rect)
-
+         # --- Vẽ Avatar ---
+        if self.avatar_img:
+            self.screen.blit(self.avatar_img, (5, 5)) # Đặt avatar ở góc trái trên
+        # -----------------
         score_text = self.font.render(f"{self.nickname} Score: {self.score}", True, (255, 255, 255))
         self.screen.blit(score_text, (5, 5))
+
+        
+       
 
     def _draw_game_over_ui(self):
         """Vẽ UI 'Game Over' đè lên màn hình."""
@@ -402,6 +417,15 @@ class Board:
 
             mouse_clicked = event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
 
+            if self.save_quit_rect.collidepoint(event.pos):
+                        self.game_state_to_save = {
+                            "snake_pos": self.snake_pos,
+                            # ... (Các thuộc tính cũ) ...
+                            "nickname": self.nickname,
+                            # --- LƯU AVATAR ---
+                            "avatar": self.avatar_name 
+                            # ------------------
+                        }
             if self.is_renaming_save:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
@@ -446,6 +470,17 @@ class Board:
                         else:
                             save_manager.save_game(self.proposed_save_name, self.game_state_to_save)
                             self.running = False
+
+    def _load_selected_avatar(self):
+        """Tải avatar đã chọn."""
+        try:
+            path = ASSETS_PATH / self.avatar_name
+            img = pygame.image.load(path).convert_alpha()
+            return pygame.transform.scale(img, (30, 30)) # Kích thước hiển thị trong game
+        except Exception as e:
+            print(f"Lỗi tải avatar '{self.avatar_name}': {e}")
+            placeholder = pygame.Surface((30, 30)); placeholder.fill((150, 0, 0))
+            return placeholder
 
     def run(self):
         """Vòng lặp game chính cho màn hình này."""

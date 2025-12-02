@@ -19,20 +19,31 @@ def main():
     while True:
         if current_scene_name == "INTRO":
             current_scene_obj = Intro(screen)
-            mode, nickname, save_name = current_scene_obj.run()
+            mode, nickname, save_name, avatar_name = current_scene_obj.run()
 
             if mode == "PLAYER":
-                current_scene_obj = Board(screen, nickname, initial_state=None, save_name=None)
+                current_scene_obj = Board(
+                    screen, 
+                    nickname, 
+                    # THÊM THAM SỐ AVATAR MỚI:
+                    avatar_name=avatar_name,
+                    initial_state=None, 
+                    save_name=None  
+                )
                 current_scene_name = "BOARD"
 
             elif mode == "LOAD":
                 game_state = save_manager.load_game(save_name)
                 if game_state:
+                    # Gán avatar mặc định nếu file save không có (cho tương thích ngược)
+                    loaded_avatar = game_state.get("avatar", s.DEFAULT_AVATAR) 
                     current_scene_obj = Board(
                         screen,
                         game_state["nickname"],
                         initial_state=game_state,
-                        save_name=save_name
+                        save_name=save_name,
+                        # THÊM THAM SỐ AVATAR MỚI:
+                        avatar_name=loaded_avatar
                     )
                     current_scene_name = "BOARD"
                 else:

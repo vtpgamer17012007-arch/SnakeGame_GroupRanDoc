@@ -111,13 +111,6 @@ class Intro:
             mouse_clicked = event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
 
             if not self.showing_load_menu:
-                if event.type == pygame.KEYDOWN:
-                    if self.input_active:
-                        if event.key == pygame.K_BACKSPACE:
-                            self.nickname = self.nickname[:-1]
-                        elif len(self.nickname) < 15:
-                            self.nickname += event.unicode
-
                 if mouse_clicked:
                     self.input_active = self.input_rect.collidepoint(event.pos)
 
@@ -134,6 +127,7 @@ class Intro:
                         self.save_list = save_manager.get_save_list()
                         self.current_page = 0
                         self._build_current_page()
+
                     num_avatars = len(s.AVATAR_LIST)
                     
                     if self.avatar_left_rect.collidepoint(event.pos):
@@ -143,6 +137,13 @@ class Intro:
                     if self.avatar_right_rect.collidepoint(event.pos):
                         self.current_avatar_index = (self.current_avatar_index + 1) % num_avatars
                         self.selected_avatar_name = s.AVATAR_LIST[self.current_avatar_index]
+                
+                if event.type == pygame.KEYDOWN:
+                    if self.input_active:
+                        if event.key == pygame.K_BACKSPACE:
+                            self.nickname = self.nickname[:-1]
+                        elif len(self.nickname) < 15:
+                            self.nickname += event.unicode
 
             else:
                 if mouse_clicked:

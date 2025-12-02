@@ -420,7 +420,7 @@ class Board:
             if self.save_quit_rect.collidepoint(event.pos):
                         self.game_state_to_save = {
                             "snake_pos": self.snake_pos,
-                            # ... (Các thuộc tính cũ) ...
+                           
                             "nickname": self.nickname,
                             # --- LƯU AVATAR ---
                             "avatar": self.avatar_name 

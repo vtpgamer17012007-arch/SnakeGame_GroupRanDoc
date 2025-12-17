@@ -9,6 +9,7 @@ from snake.scenes.play_together import PlayTogether
 from snake.scenes.rules import Rules
 from snake import save_manager
 from snake.scenes.board_2p import Board2P
+from snake.scenes.battle_royale import Battle
 
 class SnakeApp:
     def __init__(self):
@@ -103,7 +104,7 @@ class SnakeApp:
                 next_scene = self.current_scene_obj.run()
                 self.current_scene_name = next_scene
             elif self.current_scene_name == "BATTLE_ROYALE":
-                self.current_scene_obj = Board2P(self.screen, self.nickname_player1, self.nickname_player2) # Tạm thời dùng PlayTogether cho Battle Royale
+                self.current_scene_obj = Battle(self.screen, self.nickname_player1, self.nickname_player2) # Tạm thời dùng PlayTogether cho Battle Royale
                 next_scene = self.current_scene_obj.run()
                 self.current_scene_name = next_scene
             

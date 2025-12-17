@@ -40,7 +40,7 @@ class SoloLeveling:
         self._load_ui_assets()
         
         try:
-            bg_path = Path(__file__).parent.parent / "assets/play_together_board.png"
+            bg_path = Path(__file__).parent.parent / "assets/play_solo.png"
             self.bg_image = pygame.image.load(bg_path)
             self.bg_image = pygame.transform.scale(self.bg_image, (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
         except FileNotFoundError:
@@ -224,8 +224,8 @@ class SoloLeveling:
             self.screen.blit(self.snake_sprites["poop"], 
                              pygame.Rect(pp[0]*s.GRID_SIZE, pp[1]*s.GRID_SIZE, s.GRID_SIZE, s.GRID_SIZE))
 
-        score_txt = self.font.render(f"{self.nickname} Score: {self.env.score}", True, (255, 255, 255))
-        self.screen.blit(score_txt, (80, 50))
+        score_txt = self.font.render(f"{self.nickname}'s Score: {self.env.score}", True, (255, 255, 255))
+        self.screen.blit(score_txt, (200, 60))
 
     def _draw_game_over_ui(self):
         self._draw_overlay()

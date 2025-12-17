@@ -150,9 +150,9 @@ class Board2P(Board):
             self.screen.blit(self.snake_sprites["poop"], (px*s.GRID_SIZE, py*s.GRID_SIZE))
 
         # UI Score
-        t1 = self.font.render(f"{self.name1}: {self.env.p1_score}", True, (0, 0, 0)) # Chữ đen
-        t2 = self.font.render(f"{self.name2}: {self.env.p2_score}", True, (0, 0, 0)) # Chữ đen
-        self.screen.blit(t1, (80, 50))
+        t1 = self.font.render(f"{self.name1}: {self.env.p1_score}", True, (255, 255, 255)) # Chữ trang
+        t2 = self.font.render(f"{self.name2}: {self.env.p2_score}", True, (255, 255, 255)) # Chữ trang
+        self.screen.blit(t1, (200, 50))
         self.screen.blit(t2, (s.SCREEN_WIDTH - 250, 50))
 
         # Game Over UI

@@ -128,13 +128,13 @@ class SnakeEnv2P:
 
         if not self.p1_alive and not self.p2_alive:
             self.game_over = True
-            self.winner = "Draw"
+            self.winner = "LOSE!"
         elif not self.p1_alive:
             self.game_over = True
-            self.winner = "Player 2 Wins!"
+            self.winner = "LOSE!"
         elif not self.p2_alive:
             self.game_over = True
-            self.winner = "Player 1 Wins!"
+            self.winner = "LOSE!"
 
         return self.get_state()
 

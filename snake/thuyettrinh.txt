@@ -1,0 +1,20 @@
+kt nen tang:
+- pygame, python
+- 
+
+cac cong trinh lien quan(*) - ai da lam gi, ho giai ra chua, gap van de gi => nhung cai gap thi toi fix dc nhung gi
+
+method: (viet thanh ma gia -> mo ta y tuong (cai gi hay va dac biet thi show ra) , hinh anh)
+-logic cac ham ntn
+- sequent diagram (front end, back end) mo ta cac luong trong du an (ve hinh cai thang) - overview ve du an
+
+thi Nghiem (may nhom lam DL thoi)
+ - dataset (lay cai gi so sanh), method (toi so sanh voi cai gi), metrix (ban do bang cai gi de biet cua ban tot hon, Ac, F1)
+
+dicussion 
+
+ket luan
+ 
+(duong dan ma nguon ) 
+demo - quay video khong long tieng, tap trung vao ket qua
+report ~20 trang

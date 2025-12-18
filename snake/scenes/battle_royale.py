@@ -18,10 +18,15 @@ class Battle(Board):
         self.font_big = pygame.font.SysFont('Arial', 50, bold=True)
         
         self.env = SnakeEnv2Pvp()
+<<<<<<< HEAD
         self.snake_sprites_p1 = {}
         self.snake_sprites_p2 = {}
         self._load_snake_sprites(self.snake_sprites_p1, "snake_sprites")
         self._load_snake_sprites(self.snake_sprites_p2, "snake_sprites2")
+=======
+        self.snake_sprites = {}
+        self._load_snake_sprites() # Dùng lại hàm của cha
+>>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
         self._load_ui_assets()     # Dùng lại hàm của cha
         
         # Queue input cho 2 người chơi
@@ -31,10 +36,16 @@ class Battle(Board):
         self._load_background() # Gọi hàm load nền
         self._load_snake_sprites()
         self._load_ui_assets() 
+<<<<<<< HEAD
         # Nút Play Again và Back
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
         self.play_again_rect = pygame.Rect(cx - 100, cy + 20, 200, 50)
         self.btn_back_rect = pygame.Rect(cx - 100, cy + 90, 200, 50)
+=======
+        # Nút Back
+        cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
+        self.btn_back_rect = pygame.Rect(cx - 100, cy + 50, 200, 50)
+>>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
 
     def _load_background(self):
         try:
@@ -49,12 +60,16 @@ class Battle(Board):
             if event.type == pygame.QUIT: self.running = False
             
             if event.type == pygame.MOUSEBUTTONDOWN and self.env.game_over:
+<<<<<<< HEAD
                 if self.play_again_rect.collidepoint(event.pos):
                     # Restart the battle game
                     self.env.reset()
                     self.input_q1 = []
                     self.input_q2 = []
                 elif self.btn_back_rect.collidepoint(event.pos):
+=======
+                if self.btn_back_rect.collidepoint(event.pos):
+>>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
                     self.running = False # Quay về Intro
             
             if event.type == pygame.KEYDOWN:
@@ -90,6 +105,7 @@ class Battle(Board):
         d2 = self._get_next_move(self.input_q2, self.env.p2_dir)
         
         self.env.step(d1, d2)
+<<<<<<< HEAD
     def _load_snake_sprites(self, sprite_dict, folder_name):
         try:
             SPRITE_PATH = Path(__file__).parent.parent / f"assets/{folder_name}"
@@ -172,6 +188,54 @@ class Battle(Board):
                     if sprite_key: sprite = sprites[sprite_key]
 
             if sprite: self.screen.blit(sprite, rect)
+=======
+    def _load_snake_sprites(self):
+        try:
+            SPRITE_PATH = Path(__file__).parent.parent / "assets/snake_sprites"
+            sz = (s.GRID_SIZE, s.GRID_SIZE)
+            
+            # Head
+            h_down = pygame.image.load(SPRITE_PATH / "head_down.png").convert_alpha()
+            self.snake_sprites["head_down"] = pygame.transform.scale(h_down, sz)
+            self.snake_sprites["head_up"] = pygame.transform.rotate(pygame.transform.scale(h_down, sz), 180)
+            self.snake_sprites["head_left"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_left.png").convert_alpha(), sz)
+            self.snake_sprites["head_right"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_right.png").convert_alpha(), sz)
+            
+            # Tail
+            self.snake_sprites["tail_up"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "tail_up.png").convert_alpha(), sz)
+            self.snake_sprites["tail_down"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "tail_down.png").convert_alpha(), sz)
+            self.snake_sprites["tail_left"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "tail_left.png").convert_alpha(), sz)
+            self.snake_sprites["tail_right"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "tail_right.png").convert_alpha(), sz)
+
+            # Body & Turns
+            self.snake_sprites["body_vertical"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "body_vertical.png").convert_alpha(), sz)
+            self.snake_sprites["body_horizontal"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "body_horizontal.png").convert_alpha(), sz)
+            
+            self.snake_sprites["turn_UL"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_UL.png").convert_alpha(), sz)
+            self.snake_sprites["turn_UR"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_UR.png").convert_alpha(), sz)
+            self.snake_sprites["turn_DL"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_DL.png").convert_alpha(), sz)
+            self.snake_sprites["turn_DR"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "turn_DR.png").convert_alpha(), sz)
+            
+            # Items
+            self.snake_sprites["food"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "food.png").convert_alpha(), sz)
+            self.snake_sprites["poop"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "poop.png").convert_alpha(), sz)
+
+        except FileNotFoundError:
+            print("Lỗi load ảnh rắn")
+            sys.exit()
+
+    def _draw_snake(self, positions, direction, is_p2=False):
+        
+        # Nếu là P2, ta sẽ vẽ đè màu lên sprite để phân biệt
+        for idx, pos in enumerate(positions):
+            rect = pygame.Rect(pos[0]*s.GRID_SIZE, pos[1]*s.GRID_SIZE, s.GRID_SIZE, s.GRID_SIZE)
+            
+            sprite = self.snake_sprites["body_vertical"] # Mặc định để test
+            
+            color = (0, 255, 0) if not is_p2 else (255, 200, 0) # P1 Xanh, P2 Vàng
+            pygame.draw.rect(self.screen, color, rect)
+            pygame.draw.rect(self.screen, (0,0,0), rect, 1)
+>>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
 
     def _draw_elements(self):
         if self.bg_image:
@@ -179,6 +243,7 @@ class Battle(Board):
         else:
             self.screen.fill(s.COLOR_BACKGROUND)
         
+<<<<<<< HEAD
         # Vẽ rắn P1
         if self.env.p1_alive:
             self._draw_one_snake(self.env.p1_pos, self.env.p1_dir, self.snake_sprites_p1)
@@ -186,22 +251,39 @@ class Battle(Board):
         # Vẽ Rắn P2
         if self.env.p2_alive:
             self._draw_one_snake(self.env.p2_pos, self.env.p2_dir, self.snake_sprites_p2)
+=======
+        # Vẽ rắn
+        if self.env.p1_alive: self._draw_snake(self.env.p1_pos, self.env.p1_dir, is_p2=False)
+        if self.env.p2_alive: self._draw_snake(self.env.p2_pos, self.env.p2_dir, is_p2=True)
+>>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
 
         # Vẽ Food (Táo)
         if self.env.food_pos:
             fx, fy = self.env.food_pos
+<<<<<<< HEAD
             self.screen.blit(self.snake_sprites_p1["food"], (fx*s.GRID_SIZE, fy*s.GRID_SIZE))
+=======
+            self.screen.blit(self.snake_sprites["food"], (fx*s.GRID_SIZE, fy*s.GRID_SIZE))
+>>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
 
         # Vẽ Poop (Shit)
         if self.env.poop_pos:
             px, py = self.env.poop_pos
+<<<<<<< HEAD
             self.screen.blit(self.snake_sprites_p1["poop"], (px*s.GRID_SIZE, py*s.GRID_SIZE))
+=======
+            self.screen.blit(self.snake_sprites["poop"], (px*s.GRID_SIZE, py*s.GRID_SIZE))
+>>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
 
         # UI Score
         t1 = self.font.render(f"{self.name1}: {self.env.p1_score}", True, (255, 255, 255)) # Chữ trang
         t2 = self.font.render(f"{self.name2}: {self.env.p2_score}", True, (255, 255, 255)) # Chữ trang
         self.screen.blit(t1, (200, 50))
+<<<<<<< HEAD
         self.screen.blit(t2, (s.SCREEN_WIDTH - 350, 50))
+=======
+        self.screen.blit(t2, (s.SCREEN_WIDTH - 250, 50))
+>>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
 
         # Game Over UI
         if self.env.game_over:
@@ -212,6 +294,7 @@ class Battle(Board):
             w_txt = self.font_big.render(self.env.winner, True, (255, 255, 255))
             self.screen.blit(w_txt, w_txt.get_rect(center=(s.SCREEN_WIDTH//2, s.SCREEN_HEIGHT//2 - 20)))
 
+<<<<<<< HEAD
             # Play Again button
             try:
                 self.screen.blit(self.img_play_again, self.play_again_rect)
@@ -224,6 +307,11 @@ class Battle(Board):
             self.screen.blit(self.img_main_menu, self.btn_back_rect)
             t2 = self.font.render("Main Menu", True, (255, 255, 255))
             self.screen.blit(t2, t2.get_rect(center=self.btn_back_rect.center))
+=======
+            self.screen.blit(self.img_main_menu, self.btn_back_rect)
+            t = self.font.render("Back to Menu", True, (255, 255, 255))
+            self.screen.blit(t, t.get_rect(center=self.btn_back_rect.center))
+>>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
 
     def run(self):
         while self.running:

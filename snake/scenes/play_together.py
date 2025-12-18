@@ -27,6 +27,10 @@ class PlayTogether:
         self.game_state_to_save = {}
 
         self.env = SnakeEnv()
+        self.snake_sprites_p1 = {}
+        self.snake_sprites_p2 = {}
+        self._load_snake_sprites(self.snake_sprites_p1, "snake_sprites")
+        self._load_snake_sprites(self.snake_sprites_p2, "snake_sprites2")
 
         self.was_loaded_game = (initial_state is not None)
         self.save_name_if_loaded = save_name
@@ -40,8 +44,6 @@ class PlayTogether:
             self.current_speed = difficulty
 
         self.input_queue = []
-        self.snake_sprites = {}
-        self._load_snake_sprites()
         self._load_ui_assets()
         
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2

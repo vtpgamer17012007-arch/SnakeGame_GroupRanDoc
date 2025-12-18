@@ -62,7 +62,6 @@ class SnakeApp:
             
             # 3. PLAYER_SETUP: Scene Nhập Thông tin Người chơi (Phụ thuộc vào mode)
             elif self.current_scene_name == "SELECT_INFO":
-                print("ok")
                 # Khởi tạo Setup Scene và truyền chế độ đã chọn vào
                 print(self.selected_mode)
                 self.current_scene_obj = SelectInfo(self.screen, self.selected_mode)

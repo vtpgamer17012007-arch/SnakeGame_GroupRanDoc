@@ -29,10 +29,12 @@ class Battle(Board):
         self.input_q2 = []
 
         self._load_background() # Gọi hàm load nền
-        self._load_ui_assets()
-        # Nút Back
+        self._load_snake_sprites()
+        self._load_ui_assets() 
+        # Nút Play Again và Back
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
-        self.btn_back_rect = pygame.Rect(cx - 100, cy + 50, 200, 50)
+        self.play_again_rect = pygame.Rect(cx - 100, cy + 20, 200, 50)
+        self.btn_back_rect = pygame.Rect(cx - 100, cy + 90, 200, 50)
 
     def _load_background(self):
         try:
@@ -47,7 +49,12 @@ class Battle(Board):
             if event.type == pygame.QUIT: self.running = False
             
             if event.type == pygame.MOUSEBUTTONDOWN and self.env.game_over:
-                if self.btn_back_rect.collidepoint(event.pos):
+                if self.play_again_rect.collidepoint(event.pos):
+                    # Restart the battle game
+                    self.env.reset()
+                    self.input_q1 = []
+                    self.input_q2 = []
+                elif self.btn_back_rect.collidepoint(event.pos):
                     self.running = False # Quay về Intro
             
             if event.type == pygame.KEYDOWN:
@@ -205,9 +212,18 @@ class Battle(Board):
             w_txt = self.font_big.render(self.env.winner, True, (255, 255, 255))
             self.screen.blit(w_txt, w_txt.get_rect(center=(s.SCREEN_WIDTH//2, s.SCREEN_HEIGHT//2 - 20)))
 
+            # Play Again button
+            try:
+                self.screen.blit(self.img_play_again, self.play_again_rect)
+            except AttributeError:
+                self.screen.blit(self.img_main_menu, self.play_again_rect)
+            t = self.font.render("Play Again", True, (255, 255, 255))
+            self.screen.blit(t, t.get_rect(center=self.play_again_rect.center))
+
+            # Main Menu button
             self.screen.blit(self.img_main_menu, self.btn_back_rect)
-            t = self.font.render("Back to Menu", True, (255, 255, 255))
-            self.screen.blit(t, t.get_rect(center=self.btn_back_rect.center))
+            t2 = self.font.render("Main Menu", True, (255, 255, 255))
+            self.screen.blit(t2, t2.get_rect(center=self.btn_back_rect.center))
 
     def run(self):
         while self.running:

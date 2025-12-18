@@ -16,6 +16,7 @@ class Board2P(Board):
         self.name2 = name2 # Lưu tên
         self.font = pygame.font.SysFont('Arial', 24)
         self.font_big = pygame.font.SysFont('Arial', 50, bold=True)
+        self.font_button = pygame.font.SysFont('Arial', 30)
         
         self.env = SnakeEnv2P()
         self.snake_sprites = {}
@@ -31,9 +32,23 @@ class Board2P(Board):
 
         self._load_background() # Gọi hàm load nền
         self._load_ui_assets() 
-        # Nút Back
+        # Nút Play Again và Back
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
-        self.btn_back_rect = pygame.Rect(cx - 100, cy + 50, 200, 50)
+        self.play_again_rect = pygame.Rect(cx - 100, cy + 20, 200, 50)
+        self.btn_back_rect = pygame.Rect(cx - 100, cy + 90, 200, 50)
+        # Pause related
+        self.is_paused = False
+        self.is_confirming_save = False
+        self.is_renaming_save = False
+        self.proposed_save_name = ""
+        self.new_save_name = ""
+        self.game_state_to_save = {}
+        self.resume_rect = pygame.Rect(cx - 100, cy - 30, 200, 50)
+        self.save_quit_rect = pygame.Rect(cx - 100, cy + 40, 200, 50)
+        self.confirm_overwrite_rect = pygame.Rect(cx - 100, cy, 200, 50)
+        self.confirm_new_save_rect = pygame.Rect(cx - 100, cy + 70, 200, 50)
+        self.rename_input_rect = pygame.Rect(cx - 150, cy, 300, 50)
+        self.rename_save_button_rect = pygame.Rect(cx - 100, cy + 70, 200, 50)
 
     def _load_background(self):
         try:
@@ -45,13 +60,14 @@ class Board2P(Board):
 
     def _handle_input(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: self.running = False
-            
-            if event.type == pygame.MOUSEBUTTONDOWN and self.env.game_over:
-                if self.btn_back_rect.collidepoint(event.pos):
-                    self.running = False # Quay về Intro
-            
+            if event.type == pygame.QUIT:
+                self.running = False
+
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    # toggle pause
+                    self.is_paused = not self.is_paused
+
                 # Input Player 1 (Mũi tên)
                 d1 = None
                 if event.key == s.P1_CONTROLS["UP"]: d1 = (0, -1)
@@ -207,15 +223,90 @@ class Board2P(Board):
             w_txt = self.font_big.render(self.env.winner, True, (255, 255, 255))
             self.screen.blit(w_txt, w_txt.get_rect(center=(s.SCREEN_WIDTH//2, s.SCREEN_HEIGHT//2 - 20)))
 
+            # Play Again button
+            try:
+                self.screen.blit(self.img_play_again, self.play_again_rect)
+            except AttributeError:
+                self.screen.blit(self.img_main_menu, self.play_again_rect)
+            t = self.font.render("Play Again", True, (255, 255, 255))
+            self.screen.blit(t, t.get_rect(center=self.play_again_rect.center))
+
+            # Main Menu button
             self.screen.blit(self.img_main_menu, self.btn_back_rect)
-            t = self.font.render("Back to Menu", True, (255, 255, 255))
-            self.screen.blit(t, t.get_rect(center=self.btn_back_rect.center))
+            t2 = self.font.render("Main Menu", True, (255, 255, 255))
+            self.screen.blit(t2, t2.get_rect(center=self.btn_back_rect.center))
+
+    def _draw_overlay(self):
+        overlay = pygame.Surface((s.SCREEN_WIDTH, s.SCREEN_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        self.screen.blit(overlay, (0, 0))
+
+    def _draw_pause_ui(self):
+        # Dark overlay + PAUSED title + Resume / Save & Quit
+        self._draw_overlay()
+        cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
+        t = self.font_big.render("PAUSED", True, (255, 255, 0))
+        self.screen.blit(t, t.get_rect(center=(cx, self.resume_rect.y - 50)))
+
+        # Resume button
+        try:
+            self.screen.blit(self.img_resume, self.resume_rect)
+        except AttributeError:
+            self.screen.blit(self.img_main_menu, self.resume_rect)
+        self.screen.blit(self.font_button.render("Resume", True, (255,255,255)),
+                         self.font_button.render("Resume", True, (255,255,255)).get_rect(center=self.resume_rect.center))
+
+        # Save & Quit button
+        try:
+            self.screen.blit(self.img_save_quit, self.save_quit_rect)
+        except AttributeError:
+            self.screen.blit(self.img_main_menu, self.save_quit_rect)
+        self.screen.blit(self.font_button.render("Save & Quit", True, (255,255,255)),
+                         self.font_button.render("Save & Quit", True, (255,255,255)).get_rect(center=self.save_quit_rect.center))
+
+    def _handle_pause_input(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.is_paused = False
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.resume_rect.collidepoint(event.pos):
+                    self.is_paused = False
+                if self.save_quit_rect.collidepoint(event.pos):
+                    # For 2-player mode we simply quit to intro on Save & Quit
+                    self.running = False
+
+    def _handle_game_over_input(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.play_again_rect.collidepoint(event.pos):
+                    # Restart the 2-player game
+                    self.env.reset()
+                    self.input_q1 = []
+                    self.input_q2 = []
+                elif self.btn_back_rect.collidepoint(event.pos):
+                    self.running = False # Quay về Intro
 
     def run(self):
         while self.running:
-            self._handle_input()
-            self._update_game()
+            if self.is_paused:
+                self._handle_pause_input()
+            elif self.env.game_over:
+                self._handle_game_over_input()
+            else:
+                self._handle_input()
+
+            if not self.env.game_over and not self.is_paused:
+                self._update_game()
+
             self._draw_elements()
+            if self.is_paused:
+                self._draw_pause_ui()
+
             pygame.display.update()
-            self.clock.tick(10) 
+            self.clock.tick(10)
         return "INTRO"

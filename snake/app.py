@@ -1,6 +1,7 @@
 import pygame
 import sys
 from snake import settings as s
+from snake.scenes.ai_mode import AIMode
 from snake.scenes.solo_leveling import SoloLeveling
 from snake.scenes.intro import Intro
 from snake.scenes.play_mode import PlayMode 
@@ -8,7 +9,7 @@ from snake.scenes.select_info import SelectInfo
 from snake.scenes.play_together import PlayTogether 
 from snake.scenes.rules import Rules
 from snake import save_manager
-from snake.scenes.board_2p import Board2P
+from snake.scenes.board_2p import Board2P 
 from snake.scenes.battle_royale import Battle
 
 class SnakeApp:
@@ -42,7 +43,7 @@ class SnakeApp:
                     else:
                         self.current_scene_name = "INTRO"
                 elif mode == "AI":
-                    self.current_scene_name = "INTRO"
+                    self.current_scene_name = "AI_MODE"
                 elif mode == "QUIT":
                     break
             
@@ -93,6 +94,11 @@ class SnakeApp:
                         self.current_scene_name = "BATTLE_ROYALE"
 
             # 5. Scene Chơi Game Chính
+
+            elif self.current_scene_name == "AI_MODE":
+                self.current_scene_obj = AIMode(self.screen)
+                next_scene = self.current_scene_obj.run()
+                self.current_scene_name = next_scene
 
             elif self.current_scene_name == "SOLO_LEVELING":
                 self.current_scene_obj = SoloLeveling(self.screen, self.nickname_player1, self.difficulty)

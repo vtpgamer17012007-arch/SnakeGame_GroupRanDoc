@@ -6,7 +6,7 @@ from pathlib import Path
 from snake.core.env_snake import SnakeEnv
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
-
+ONE_PLAYER_ASSETS_PATH = Path(__file__).parent.parent / "assets/1_player_asset"
 class SoloLeveling:
     def __init__(self, screen, nickname, difficulty, initial_state=None, save_name=None):
         self.screen = screen
@@ -39,13 +39,8 @@ class SoloLeveling:
         self._load_snake_sprites()
         self._load_ui_assets()
         
-        try:
-            bg_path = Path(__file__).parent.parent / "assets/play_solo.png"
-            self.bg_image = pygame.image.load(bg_path)
-            self.bg_image = pygame.transform.scale(self.bg_image, (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
-        except FileNotFoundError:
-            print("Thiếu ảnh background!")
-            self.bg_image = None
+       
+        
 
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
         self.play_again_rect = pygame.Rect(cx - 100, cy + 20, 200, 50)
@@ -63,9 +58,8 @@ class SoloLeveling:
             sz = (s.GRID_SIZE, s.GRID_SIZE)
             
             # Head
-            h_down = pygame.image.load(SPRITE_PATH / "head_down.png").convert_alpha()
-            self.snake_sprites["head_down"] = pygame.transform.scale(h_down, sz)
-            self.snake_sprites["head_up"] = pygame.transform.rotate(pygame.transform.scale(h_down, sz), 180)
+            self.snake_sprites["head_down"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_down.png").convert_alpha(), sz)
+            self.snake_sprites["head_up"] = pygame.transform.rotate(pygame.image.load(SPRITE_PATH / "head_up.png").convert_alpha(), sz)
             self.snake_sprites["head_left"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_left.png").convert_alpha(), sz)
             self.snake_sprites["head_right"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_right.png").convert_alpha(), sz)
             
@@ -94,6 +88,7 @@ class SoloLeveling:
 
     def _load_ui_assets(self):
         try:
+            self.img_solo_leveling_board = pygame.transform.scale(pygame.image.load(ONE_PLAYER_ASSETS_PATH / "solo_leveling_board.png"), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
             self.img_play_again = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "green_button00.png"), (200, 50))
             self.img_main_menu = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "red_button00.png"), (200, 50))
             self.img_resume = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "green_button00.png"), (200, 50))
@@ -156,11 +151,9 @@ class SoloLeveling:
                 self.loaded_and_died_instantly = True
 
     def _draw_elements(self):
-        if self.bg_image:
-            self.screen.blit(self.bg_image, (0, 0))
-        else:
-            self.screen.fill(s.COLOR_BACKGROUND)
-
+        
+        self.screen.blit(self.img_solo_leveling_board, (0, 0))
+        
         snake_pos = self.env.snake_pos
         direction = self.env.direction
         for index, pos in enumerate(snake_pos):

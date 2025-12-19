@@ -6,15 +6,16 @@ from pathlib import Path
 from snake.core.env_snake import SnakeEnv
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
+FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
 
 class Board:
     def __init__(self, screen, nickname, initial_state=None, save_name=None, difficulty=s.BASE_SPEED):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
-        self.font = pygame.font.SysFont('Arial', 24)
-        self.font_game_over = pygame.font.SysFont('Arial', 50, bold=True)
-        self.font_button = pygame.font.SysFont('Arial', 30)
+        self.font = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 24)
+        self.font_game_over = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 55)
+        self.font_button = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 37)
 
         self.nickname = nickname
         self.is_game_over = False
@@ -98,6 +99,9 @@ class Board:
             self.img_save_new = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "yellow_button00.png"), (200, 50))
             self.img_rename_bg = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "grey_panel.png"), (300, 50))
             self.img_rename_save = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "green_button00.png"), (200, 50))
+
+
+            
         except FileNotFoundError:
             print("Lỗi load ảnh UI")
             sys.exit()
@@ -217,8 +221,10 @@ class Board:
             self.screen.blit(self.snake_sprites["poop"], 
                              pygame.Rect(pp[0]*s.GRID_SIZE, pp[1]*s.GRID_SIZE, s.GRID_SIZE, s.GRID_SIZE))
 
-        score_txt = self.font.render(f"{self.nickname} Score: {self.env.score}", True, (255, 255, 255))
-        self.screen.blit(score_txt, (5, 5))
+        name_txt = self.font.render(f"{self.nickname}", True, (255, 255, 255))
+        self.screen.blit(score_txt, (513, 59))
+        score_txt = self.font.render(f"Score: {self.env.score}", True, (255, 255, 255))
+        self.screen.blit(score_txt, (513, 59))
 
     def _draw_game_over_ui(self):
         self._draw_overlay()

@@ -53,6 +53,13 @@ SELECTED_SNAKE_COLOR = "green"
 COLOR_SNAKE = SNAKE_COLORS[SELECTED_SNAKE_COLOR]
 
 # =====================================================
+# CẤU HÌNH AVATAR NGƯỜI CHƠI
+# =====================================================
+# Thêm vào cuối file settings.py
+AVATAR_LIST = ["avatar1", "avatar2", "avatar3", "avatar4", "avatar5"]
+
+
+# =====================================================
 # PHONG CẢNH BUTTON MENU (Themes)
 # =====================================================
 # Theme bao gồm: normal, hover, pressed, text

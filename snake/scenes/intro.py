@@ -114,6 +114,8 @@ class Intro:
                         self.save_list = save_manager.get_save_list()
                         self.current_page = 0
                         self._build_current_page()
+                    if self.credit_button_rect.collidepoint(event.pos):
+                            self.selected_mode = "CREDIT"; self.running = False
             else:
                 if clicked:
                     if self.back_button_rect.collidepoint(event.pos): self.showing_load_menu = False

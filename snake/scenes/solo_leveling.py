@@ -7,15 +7,18 @@ from snake.core.env_snake import SnakeEnv
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 ONE_PLAYER_ASSETS_PATH = Path(__file__).parent.parent / "assets/1_player_asset"
+FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
+
 class SoloLeveling:
-    def __init__(self, screen, nickname, difficulty, initial_state=None, save_name=None):
+    def __init__(self, screen, nickname, avatar, difficulty, initial_state=None, save_name=None):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
-        self.font = pygame.font.SysFont('Arial', 24)
-        self.font_game_over = pygame.font.SysFont('Arial', 50, bold=True)
-        self.font_button = pygame.font.SysFont('Arial', 30)
-        
+        self.font = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 24)
+        self.font_game_over = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 55)
+        self.font_button = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 37)
+
+        self.avatar = avatar
         self.nickname = nickname
         self.is_game_over = False
         self.is_paused = False
@@ -59,7 +62,7 @@ class SoloLeveling:
             
             # Head
             self.snake_sprites["head_down"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_down.png").convert_alpha(), sz)
-            self.snake_sprites["head_up"] = pygame.transform.rotate(pygame.image.load(SPRITE_PATH / "head_up.png").convert_alpha(), sz)
+            self.snake_sprites["head_up"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_up.png").convert_alpha(), sz)
             self.snake_sprites["head_left"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_left.png").convert_alpha(), sz)
             self.snake_sprites["head_right"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_right.png").convert_alpha(), sz)
             
@@ -89,6 +92,11 @@ class SoloLeveling:
     def _load_ui_assets(self):
         try:
             self.img_solo_leveling_board = pygame.transform.scale(pygame.image.load(ONE_PLAYER_ASSETS_PATH / "solo_leveling_board.png"), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
+
+            self.img_avartar = pygame.image.load(ASSETS_PATH/ f"{self.avatar}.png").convert_alpha()
+            #load font
+            self.font_file = ASSETS_PATH / "fonts/Ruso-Regular.ttf"
+
             self.img_play_again = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "green_button00.png"), (200, 50))
             self.img_main_menu = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "red_button00.png"), (200, 50))
             self.img_resume = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "green_button00.png"), (200, 50))
@@ -153,6 +161,9 @@ class SoloLeveling:
     def _draw_elements(self):
         
         self.screen.blit(self.img_solo_leveling_board, (0, 0))
+        # Vẽ avatar
+        self.screen.blit(self.img_avartar, (55,31))
+ 
         
         snake_pos = self.env.snake_pos
         direction = self.env.direction
@@ -217,8 +228,10 @@ class SoloLeveling:
             self.screen.blit(self.snake_sprites["poop"], 
                              pygame.Rect(pp[0]*s.GRID_SIZE, pp[1]*s.GRID_SIZE, s.GRID_SIZE, s.GRID_SIZE))
 
-        score_txt = self.font.render(f"{self.nickname}'s Score: {self.env.score}", True, (255, 255, 255))
-        self.screen.blit(score_txt, (200, 60))
+        name_txt = self.font.render(f"{self.nickname}", True, (255, 255, 255))
+        self.screen.blit(name_txt, (178, 59))
+        score_txt = self.font.render(f"Score: {self.env.score}", True, (255, 255, 255))
+        self.screen.blit(score_txt, (1106, 59))
 
     def _draw_game_over_ui(self):
         self._draw_overlay()

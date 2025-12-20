@@ -8,19 +8,24 @@ import snake.core.save_manager as save_manager
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
-class Battle(Board):
-    def __init__(self, screen, name1="Player 1", name2="Player 2"):
-        # Khởi tạo cơ bản
+ASSETS_PATH = Path(__file__).parent.parent / "assets"
+FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
+
+class BattleRoyal(Board):
+    def __init__(self, screen, avatar1, avatar2, name1="Player 1", name2="Player 2"):
+        # Khởi tạo cơ bản, không cần load state hay save
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
-        self.name1 = name1 
-        self.name2 = name2 
-        self.font = pygame.font.SysFont('Arial', 24)
-        self.font_game_over = pygame.font.SysFont('Arial', 50, bold=True)
-        self.font_button = pygame.font.SysFont('Arial', 30)
+        self.name1 = name1 # Lưu tên
+        self.name2 = name2 # Lưu tên
+        self.avatar1 = avatar1
+        self.avatar2 = avatar2
+        self.font = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 24)
+        self.font_game_over = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 55)
+        self.font_button = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 37)
+        self.font_big = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 55)
         
-        self.mode_id = "BATTLE_ROYALE"
         
         # --- CÁC BIẾN UI SAVE (Đã cập nhật) ---
         self.is_save_input_active = False
@@ -29,7 +34,6 @@ class Battle(Board):
         self.cursor_timer = 0
         self.save_prefix = "Save_PvP_"
         # --------------------------------------
-
         self.env = SnakeEnv2Pvp()
         self.snake_sprites_p1 = {}
         self.snake_sprites_p2 = {}
@@ -67,18 +71,28 @@ class Battle(Board):
         except FileNotFoundError:
             print("Lỗi load ảnh UI")
             sys.exit()
+        self._load_ui_assets()     # Dùng lại hàm của cha
 
     def _load_background(self):
-        try:
-            bg_path = Path(__file__).parent.parent / "assets/play_together_board.png"
-            self.bg_image = pygame.image.load(bg_path)
-            self.bg_image = pygame.transform.scale(self.bg_image, (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
-        except FileNotFoundError:
-            self.bg_image = None
+
+        self.bg_image = pygame.image.load(ASSETS_PATH/ "play_together_board.png").convert_alpha()
+
+        self.img_avartar_player1 = pygame.image.load(ASSETS_PATH/ f"{self.avatar1}.png").convert_alpha()
+        self.img_avartar_player2 = pygame.image.load(ASSETS_PATH/ f"{self.avatar2}.png").convert_alpha()
+        
 
     def _handle_input(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT: self.running = False
+            
+            if event.type == pygame.MOUSEBUTTONDOWN and self.env.game_over:
+                if self.play_again_rect.collidepoint(event.pos):
+                    # Restart the battle game
+                    self.env.reset()
+                    self.input_q1 = []
+                    self.input_q2 = []
+                elif self.btn_back_rect.collidepoint(event.pos):
+                    self.running = False # Quay về Intro
             
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -299,11 +313,11 @@ class Battle(Board):
             if sprite: self.screen.blit(sprite, rect)
 
     def _draw_elements(self):
-        if self.bg_image:
-            self.screen.blit(self.bg_image, (0, 0))
-        else:
-            self.screen.fill(s.COLOR_BACKGROUND)
+        # Vẽ nền
+        self.screen.blit(self.bg_image, (0, 0))
         
+        
+        # Vẽ rắn P1
         if self.env.p1_alive:
             self._draw_one_snake(self.env.p1_pos, self.env.p1_dir, self.snake_sprites_p1)
         if self.env.p2_alive:
@@ -312,6 +326,8 @@ class Battle(Board):
         if self.env.food_pos:
             fx, fy = self.env.food_pos
             self.screen.blit(self.snake_sprites_p1["food"], (fx*s.GRID_SIZE, fy*s.GRID_SIZE))
+
+        # Vẽ Poop (Shit)
         if self.env.poop_pos:
             px, py = self.env.poop_pos
             self.screen.blit(self.snake_sprites_p1["poop"], (px*s.GRID_SIZE, py*s.GRID_SIZE))
@@ -320,6 +336,11 @@ class Battle(Board):
         t2 = self.font.render(f"{self.name2}: {self.env.p2_score}", True, (255, 255, 255))
         self.screen.blit(t1, (200, 50))
         self.screen.blit(t2, (s.SCREEN_WIDTH - 350, 50))
+
+        # Vẽ avatar
+        self.screen.blit(self.img_avartar_player1, (55,31))
+        self.screen.blit(self.img_avartar_player2, (1117,31))
+        
 
     def _draw_game_over_ui(self):
         overlay = pygame.Surface((s.SCREEN_WIDTH, s.SCREEN_HEIGHT), pygame.SRCALPHA)
@@ -335,7 +356,7 @@ class Battle(Board):
             self.screen.blit(self.img_main_menu, self.play_again_rect)
         t = self.font.render("Play Again", True, (255, 255, 255))
         self.screen.blit(t, t.get_rect(center=self.play_again_rect.center))
-
+        # Main Menu button
         self.screen.blit(self.img_main_menu, self.btn_back_rect)
         t2 = self.font.render("Main Menu", True, (255, 255, 255))
         self.screen.blit(t2, t2.get_rect(center=self.btn_back_rect.center))

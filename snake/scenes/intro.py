@@ -112,6 +112,8 @@ class Intro:
                     if self.continue_button_rect.collidepoint(event.pos):
                         self.selected_mode = "CONTINUE"  # Trả về tín hiệu "CONTINUE"
                         self.running = False
+                    if self.credit_button_rect.collidepoint(event.pos):
+                            self.selected_mode = "CREDIT"; self.running = False
             else:
                 if clicked:
                     if self.back_button_rect.collidepoint(event.pos): self.showing_load_menu = False

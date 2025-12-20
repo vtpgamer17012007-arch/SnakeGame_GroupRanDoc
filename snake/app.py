@@ -10,6 +10,7 @@ from snake.scenes.rules import Rules
 from snake.scenes.play_together import PlayTogether 
 from snake.scenes.battle_royale import Battle
 from snake.scenes.continue_scene import ContinueScene
+from snake.scenes.credit import Credit
 
 class SnakeApp:
     def __init__(self):
@@ -21,7 +22,9 @@ class SnakeApp:
         self.current_scene_obj = None
         self.nickname_player1 = ""
         self.nickname_player2 = ""
-        self.selected_mode = None
+        self.avatar_player1 = ""
+        self.avatar_player2 = ""
+        self.selected_mode = None # <--- THÊM BIẾN LƯU CHẾ ĐỘ CHƠI
         self.rules = None
         self.difficulty = s.DIFFICULTY_NORMAL
 
@@ -47,6 +50,8 @@ class SnakeApp:
 
                 elif mode == "AI":
                     self.current_scene_name = "AI_MODE"
+                elif mode == "CREDIT":
+                    self.current_scene_name = "CREDIT"
                 elif mode == "QUIT":
                     break
             
@@ -144,30 +149,17 @@ class SnakeApp:
             # -----------------------------------------------------------
             elif self.current_scene_name == "SELECT_INFO":
                 self.current_scene_obj = SelectInfo(self.screen, self.selected_mode)
-                status, p1, p2, diff_str = self.current_scene_obj.run() 
-
-                if status == "QUIT" or status == "BACK":
+                self.selected_mode, self.nickname_player1, self.nickname_player2, self.avatar_player1, self.avatar_player2, self.difficulty = self.current_scene_obj.run() # Lấy danh sách thông tin người chơi
+                    # Chuyển đến Mode với thông tin người chơi đã nhập
+                if self.selected_mode in ["SOLO_LEVELING", "PLAY_TOGETHER", "BATTLE_ROYALE"]:
+                    self.current_scene_name = "RULES"
+                elif self.selected_mode == "QUIT":
                      self.current_scene_name = "PLAY_MODE"
                      pygame.time.wait(150) # Thêm độ trễ chống click dính
                      pygame.event.clear()
                 else:
-                    self.nickname_player1 = p1
-                    self.nickname_player2 = p2
-                    
-                    final_difficulty = 10 
-                    if hasattr(s, str(diff_str)):
-                        val = getattr(s, str(diff_str))
-                        try: final_difficulty = int(val)
-                        except ValueError: pass
-                    elif str(diff_str).isdigit():
-                        final_difficulty = int(diff_str)
-                    
-                    self.difficulty = final_difficulty
-                    self.current_scene_name = "RULES"
-
-            # -----------------------------------------------------------
-            # 5. RULES
-            # -----------------------------------------------------------
+                    self.current_scene_name = "INTRO"
+            # 4. RULES: Scene Hiển thị Luật Chơi
             elif self.current_scene_name == "RULES":
                 self.rules = Rules(self.screen, self.selected_mode)
                 action = self.rules.run()
@@ -184,33 +176,32 @@ class SnakeApp:
                     else:
                         self.current_scene_name = "INTRO"
 
-            # -----------------------------------------------------------
-            # 6. GAME LOOP CHÍNH
-            # -----------------------------------------------------------
+            # 5. Scene Chơi Game Chính
+
+            
+
+            elif self.current_scene_name == "SOLO_LEVELING":
+                self.current_scene_obj = SoloLeveling(self.screen, self.nickname_player1, self.avatar_player1, self.difficulty)
+                next_scene = self.current_scene_obj.run() 
+                self.current_scene_name = next_scene
+
+            elif self.current_scene_name == "PLAY_TOGETHER":
+                self.current_scene_obj = PlayTogether(self.screen, self.avatar_player1, self.avatar_player2, self.nickname_player1, self.nickname_player2)
+                next_scene = self.current_scene_obj.run()
+                self.current_scene_name = next_scene
+
+            elif self.current_scene_name == "BATTLE_ROYALE":
+                self.current_scene_obj = BattleRoyal(self.screen, self.avatar_player1, self.avatar_player2, self.nickname_player1, self.nickname_player2) 
+                next_scene = self.current_scene_obj.run()
+                self.current_scene_name = next_scene
+            
             elif self.current_scene_name == "AI_MODE":
                 self.current_scene_obj = AIMode(self.screen)
                 next_scene = self.current_scene_obj.run()
                 self.current_scene_name = next_scene
 
-            elif self.current_scene_name == "SOLO_LEVELING":
-                # Kiểm tra để tránh reset game liên tục mỗi frame
-                if not isinstance(self.current_scene_obj, SoloLeveling):
-                    self.current_scene_obj = SoloLeveling(self.screen, self.nickname_player1, self.difficulty)
-                
-                next_scene = self.current_scene_obj.run() 
-                self.current_scene_name = next_scene
-
-            elif self.current_scene_name == "PLAY_TOGETHER":
-                if not isinstance(self.current_scene_obj, PlayTogether):
-                    self.current_scene_obj = PlayTogether(self.screen, self.nickname_player1, self.nickname_player2)
-                
-                next_scene = self.current_scene_obj.run()
-                self.current_scene_name = next_scene
-
-            elif self.current_scene_name == "BATTLE_ROYALE":
-                if not isinstance(self.current_scene_obj, Battle):
-                    self.current_scene_obj = Battle(self.screen, self.nickname_player1, self.nickname_player2)
-                
+            elif self.current_scene_name == "CREDIT":
+                self.current_scene_obj = Credit(self.screen)
                 next_scene = self.current_scene_obj.run()
                 self.current_scene_name = next_scene
             

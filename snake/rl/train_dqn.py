@@ -15,15 +15,15 @@ from snake import settings as s
 
 def train():
     # 1. Khởi tạo Pygame và màn hình (screen)
-    # pygame.init()
-    # screen = pygame.display.set_mode((s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
-    # pygame.display.set_caption("AI Training Mode - Group Ran Doc")
-    # clock = pygame.time.Clock()
+    pygame.init()
+    screen = pygame.display.set_mode((s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
+    pygame.display.set_caption("AI Training Mode - Group Ran Doc")
+    clock = pygame.time.Clock()
 
     # 2. Khởi tạo các thành phần logic
     env = SnakeEnv()
     agent = DQNAgent()
-    #renderer = SnakeRenderer(screen) # Sử dụng Renderer dùng chung để vẽ
+    renderer = SnakeRenderer(screen) # Sử dụng Renderer dùng chung để vẽ
 
     # Các biến theo dõi tiến trình
     plot_scores = []
@@ -43,16 +43,16 @@ def train():
     agent.model.load('model.pth')
     
     # Biến điều khiển hiển thị (Bật để xem AI chơi, tắt để train siêu tốc)
-    VISUALIZE = False
+    VISUALIZE = True
 
     print("--- Bắt đầu huấn luyện Rắn Độc ---")
 
     while True:
         # Kiểm tra sự kiện thoát cửa sổ
-        # for event in pygame.event.get():
-        #     if event.type == pygame.QUIT:
-        #         pygame.quit()
-        #         sys.exit()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
         # A. QUY TRÌNH TƯƠNG TÁC (RL LOOP)
         
@@ -83,11 +83,11 @@ def train():
         agent.memory.push(state_old, action_idx, reward, state_new, done)
 
         # B. HIỂN THỊ ĐỒ HỌA
-        # if VISUALIZE:
-        #     renderer.draw(env) # Vẽ rắn, mồi, phân bằng sprite xịn
-        #     pygame.display.update()
-            # Giới hạn tốc độ khung hình khi xem (tầm 30-60 FPS)
-            #clock.tick(60) 
+        if VISUALIZE:
+            renderer.draw(env) # Vẽ rắn, mồi, phân bằng sprite xịn
+            pygame.display.update()
+            #Giới hạn tốc độ khung hình khi xem (tầm 30-60 FPS)
+            clock.tick(60) 
 
         # C. XỬ LÝ KHI KẾT THÚC MỘT TRẬN (EPISODE)
         if done:
@@ -113,11 +113,11 @@ def train():
             save_stats(agent.n_games, record)
 
             # Cập nhật đồ thị và in log
-            # plot_scores.append(final_score)
-            # total_score += final_score
-            # mean_score = total_score / agent.n_games
-            # plot_mean_scores.append(mean_score)
-            # plot(plot_scores, plot_mean_scores) # Vẽ đồ thị tiến trình huấn luyện
+            plot_scores.append(final_score)
+            total_score += final_score
+            mean_score = total_score / agent.n_games
+            plot_mean_scores.append(mean_score)
+            plot(plot_scores, plot_mean_scores) # Vẽ đồ thị tiến trình huấn luyện
 
             print(f'Trận: {agent.n_games} | Điểm: {final_score} | Kỷ lục: {record} | Epsilon: {agent.epsilon:.2f}')
 

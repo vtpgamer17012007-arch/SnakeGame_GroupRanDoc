@@ -5,11 +5,20 @@ import snake.core.save_manager as save_manager
 from pathlib import Path
 from snake.core.env_snake import SnakeEnv
 
+ASSETS_PATH = Path(__file__).parent.parent / "assets"
+FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
+
 class SnakeRenderer:
     def __init__(self, screen):
         self.screen = screen
         self.snake_sprites = {}
         self._load_assets()
+        self.font = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 24)
+        self.font_game_over = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 55)
+        self.font_button = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 37)
+        
+        self.nickname = "The most STUPID snake in the World!"
+     
 
     def _load_assets(self):
         
@@ -17,8 +26,12 @@ class SnakeRenderer:
         SPRITE_PATH = Path(__file__).parent.parent / "assets/snake_sprites"
         ONE_PLAYER_ASSETS_PATH = Path(__file__).parent.parent / "assets/1_player_asset"
         sz = (s.GRID_SIZE, s.GRID_SIZE)
+
+        self.img_avartar = pygame.image.load(ASSETS_PATH/ "avatar6.png").convert_alpha()
+        #load font
+        self.font_file = ASSETS_PATH / "fonts/Ruso-Regular.ttf"
         
-        self.img_solo_leveling_board = pygame.transform.scale(pygame.image.load(ONE_PLAYER_ASSETS_PATH / "solo_leveling_board.png"), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
+        self.img_solo_leveling_board = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "AI_board.png"), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
         # Head
         self.snake_sprites["head_down"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_down.png").convert_alpha(), sz)
         self.snake_sprites["head_up"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "head_up.png").convert_alpha(), sz)
@@ -48,7 +61,7 @@ class SnakeRenderer:
 
     def draw(self, env):
         self.screen.blit(self.img_solo_leveling_board, (0, 0))
-        
+        self.screen.blit(self.img_avartar, (55,31))
         snake_pos = env.snake_pos
         direction = env.direction
         for index, pos in enumerate(snake_pos):
@@ -111,5 +124,11 @@ class SnakeRenderer:
             pp = p['pos']
             self.screen.blit(self.snake_sprites["poop"], 
                              pygame.Rect(pp[0]*s.GRID_SIZE, pp[1]*s.GRID_SIZE, s.GRID_SIZE, s.GRID_SIZE))
+            
+        #info
+        name_txt = self.font.render(f"{self.nickname}", True, (255, 255, 255))
+        self.screen.blit(name_txt, (178, 59))
+        score_txt = self.font.render(f"Score: {env.score}", True, (255, 255, 255))
+        self.screen.blit(score_txt, (1106, 59))
 
         

@@ -7,11 +7,15 @@ from snake.core.env_snake import SnakeEnv
 from snake.core.snake_render import SnakeRenderer # Cần Renderer để vẽ
 from snake.rl.agent_dqn import DQNAgent
 
+FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
+ASSETS_PATH = Path(__file__).parent.parent / "assets"
+
 class AIMode:
     def __init__(self, screen):
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.running = True
+        
         
         self.env = SnakeEnv()
         self.agent = DQNAgent() 
@@ -19,7 +23,7 @@ class AIMode:
 
         # 1. Sửa đường dẫn nạp model chính xác
         # model_ep1000.pth hoặc best_model.pth tùy bạn đặt tên
-        model_path = Path(__file__).parent.parent.parent / "models/model_ep1000.pth"
+        model_path = Path(__file__).parent.parent.parent / "models/model_ep5000.pth"
         
         try:
             # map_location giúp chạy được trên cả máy không có GPU
@@ -30,7 +34,7 @@ class AIMode:
             print(f"Lỗi: Không tìm thấy file model tại {model_path}")
         
         # 2. Quan trọng: Tắt tính ngẫu nhiên để AI chơi thông minh nhất
-        self.agent.epsilon = 0 
+        self.agent.epsilon = -1 
         
 
     def _handle_ai_input(self):
@@ -50,6 +54,9 @@ class AIMode:
             move = current_dir
             
         self.env.direction = move
+
+        
+
 
     def _update_game(self):
         self._handle_ai_input() # Gọi hàm xử lý AI

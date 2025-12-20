@@ -176,7 +176,7 @@ class SoloLeveling(Board):
     def _draw_elements(self):
         
         self.screen.blit(self.img_solo_leveling_board, (0, 0))
-        # Vẽ avatar
+        
         self.screen.blit(self.img_avartar, (55,31))
  
         

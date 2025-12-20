@@ -4,10 +4,13 @@ from snake import settings as s
 from pathlib import Path
 from snake.core.env_2p import SnakeEnv2P
 from snake.scenes.board import Board 
+#---------------------------------------
 import snake.core.save_manager as save_manager
+#---------------------------------------
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
+#---------------------------------------
 class PlayTogether(Board):
     def __init__(self, screen, name1="Player 1", name2="Player 2"):
         # Khởi tạo cơ bản
@@ -22,13 +25,11 @@ class PlayTogether(Board):
         
         self.mode_id = "PLAY_TOGETHER"
         
-        # --- CÁC BIẾN UI SAVE (Đã cập nhật) ---
         self.is_save_input_active = False
         self.input_text = ""
         self.cursor_visible = True        # Trạng thái con trỏ
         self.cursor_timer = 0             # Hẹn giờ nhấp nháy
         self.save_prefix = "Save_2P_"
-        # --------------------------------------
 
         self.env = SnakeEnv2P()
         self.snake_sprites_p1 = {}
@@ -56,6 +57,7 @@ class PlayTogether(Board):
         self.quit_rect = pygame.Rect(cx - 100, cy + 80, 200, 50)
         
         self.first_frame = True
+#---------------------------------------
 
     def _load_ui_assets(self):
         try:
@@ -84,9 +86,11 @@ class PlayTogether(Board):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.is_paused = not self.is_paused
+#--------------------------------------
                     self.is_save_input_active = False
                     self.input_text = ""
                     pygame.key.set_repeat(0) # Tắt lặp phím khi pause
+#---------------------------------------
 
                 # Player 1
                 d1 = None
@@ -104,6 +108,7 @@ class PlayTogether(Board):
                 elif event.key == s.P2_CONTROLS["RIGHT"]: d2 = (1, 0)
                 if d2: self.input_q2.append(d2)
 
+#---------------------------------------
     def _draw_save_input_box(self):
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
         
@@ -208,6 +213,7 @@ class PlayTogether(Board):
                     
                 elif self.quit_rect.collidepoint(event.pos):
                     self.running = False
+#---------------------------------------
 
     def _handle_game_over_input(self):
         for event in pygame.event.get():
@@ -341,6 +347,7 @@ class PlayTogether(Board):
         t2 = self.font.render("Main Menu", True, (255, 255, 255))
         self.screen.blit(t2, t2.get_rect(center=self.btn_back_rect.center))
     
+#---------------------------------------
     # --- CÁC HÀM SAVE/LOAD ---
     def get_game_state(self):
         return {
@@ -375,3 +382,4 @@ class PlayTogether(Board):
         if f: self.env.food_pos = (f[0], f[1])
         p = data.get("poop_pos")
         if p: self.env.poop_pos = (p[0], p[1])
+#---------------------------------------

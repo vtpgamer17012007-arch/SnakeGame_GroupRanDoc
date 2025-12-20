@@ -23,16 +23,13 @@ class PlayMode:
             # Load Background
             self.img_mode_background = pygame.image.load(ASSETS_PATH / "play_mode_background.png").convert()
             
-            # Load các nút chọn mode (Giả sử đây là ảnh full màn hình hoặc overlay)
             self.img_solo_leveling_button = pygame.image.load(ASSETS_PATH / "solo_leveling_button.png").convert_alpha()
             self.img_play_together_button = pygame.image.load(ASSETS_PATH / "play_together_button.png").convert_alpha()
             self.img_battle_royale_button = pygame.image.load(ASSETS_PATH / "battle_royale_button.png").convert_alpha()
             
-            # Load nút Back (Thường và Hover) - Dựa trên hình ảnh bạn cung cấp
             self.img_back_button = pygame.image.load(ASSETS_PATH / "back_button.png").convert_alpha()
             self.img_back_hover_button = pygame.image.load(ASSETS_PATH / "back_hover_button.png").convert_alpha()
             
-            # Scale nút Back cho khớp với hitbox (80x60 như bạn định nghĩa)
             self.img_back_button = pygame.transform.smoothscale(self.img_back_button, (80, 60))
             self.img_back_hover_button = pygame.transform.smoothscale(self.img_back_hover_button, (80, 60))
 
@@ -69,16 +66,15 @@ class PlayMode:
                     self.selected_mode = "BATTLE_ROYALE"
                     self.running = False
                 
-                # --- SỬA LỖI Ở ĐÂY ---
+#---------------------------------------
                 elif self.back_button_rect.collidepoint(mouse_pos):
-                    self.selected_mode = "BACK" # <--- Phải là BACK thì app.py mới quay về Intro
+                    self.selected_mode = "BACK" # Trở về menu chính
                     self.running = False
+#---------------------------------------
 
     def Hover(self, img, rect):
         """Hàm vẽ hiệu ứng hover cho các nút Mode"""
         if rect.collidepoint(pygame.mouse.get_pos()):
-            # Lưu ý: Nếu img là ảnh full màn hình thì vẽ ở (0,0) là đúng.
-            # Nếu img chỉ là cái nút nhỏ thì phải vẽ ở rect.topleft
             self.screen.blit(img, (0, 0))
 
     def _draw_elements(self):

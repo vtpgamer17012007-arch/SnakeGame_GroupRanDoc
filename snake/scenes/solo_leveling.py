@@ -8,9 +8,9 @@ ONE_PLAYER_ASSETS_PATH = Path(__file__).parent.parent / "assets/1_player_asset"
 class SoloLeveling(Board):
     def __init__(self, screen, nickname, difficulty):
         super().__init__(screen, nickname, difficulty)
-        # --- QUAN TRỌNG: ĐẶT TÊN CHẾ ĐỘ ---
+#---------------------------------------
         self.mode_id = "SOLO_LEVELING" 
-        # ----------------------------------
+#---------------------------------------
         self._load_background()
 
     def _load_background(self):
@@ -21,6 +21,7 @@ class SoloLeveling(Board):
         except FileNotFoundError:
             self.bg_image = None
 
+#---------------------------------------
     # --- HÀM TRẢ VỀ DỮ LIỆU ĐỂ LƯU ---
     def get_game_state(self):
         # Hàm này được Board gọi khi bấm Save
@@ -51,3 +52,4 @@ class SoloLeveling(Board):
         f = data.get("food_pos")
         if f: self.env.food_pos = (f[0], f[1])
         self.env.poops = data.get("poops", [])
+#---------------------------------------

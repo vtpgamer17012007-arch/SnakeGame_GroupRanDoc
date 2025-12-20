@@ -22,7 +22,9 @@ class Rules:
         self.selected_mode = None
 
         self.font_input = pygame.font.SysFont('Arial', 30)
+#---------------------------------------
         self.return_state = "QUIT"
+#---------------------------------------
         self._define_layout()
         self._load_assets()
 
@@ -45,7 +47,6 @@ class Rules:
 
         self.next_button_rect = pygame.Rect(430, 600, 275, 70)
 
-
     def _handle_input(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -57,8 +58,10 @@ class Rules:
             if clicked:
                 # Xử lý nút Back (Quay lại)
                 if self.back_button_rect.collidepoint(event.pos):
+#---------------------------------------
                     self.return_state = "QUIT" # Quan trọng: Phải set là QUIT
                     self.running = False
+#---------------------------------------
 
                 # Xử lý nút Next (Vào game)
                 # Lưu ý: Cả 3 chế độ đều dùng chung self.next_button_rect được định nghĩa ở _define_layout
@@ -73,10 +76,11 @@ class Rules:
                     is_next_clicked = True
                 
                 if is_next_clicked:
+#---------------------------------------
                     self.return_state = "PLAY" # Quan trọng: Phải set là PLAY để app.py biết mà vào game
                     self.running = False
+#---------------------------------------
                 
-
     def Hover(self, img, rect):
         if rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(img,(0,0))

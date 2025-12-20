@@ -3,7 +3,9 @@ import sys
 from snake import settings as s
 from pathlib import Path
 from snake.core.env_snake import SnakeEnv
-import snake.core.save_manager as save_manager  # <--- IMPORT MỚI
+#---------------------------------------
+import snake.core.save_manager as save_manager 
+#---------------------------------------
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
@@ -20,13 +22,13 @@ class Board:
         self.is_game_over = False
         self.is_paused = False
         
-        # --- BIẾN CHO TÍNH NĂNG SAVE (UPDATE UI) ---
+#---------------------------------------
         self.is_save_input_active = False 
         self.input_text = ""              
         self.cursor_visible = True        # Trạng thái hiện/ẩn con trỏ
         self.cursor_timer = 0             # Bộ đếm thời gian cho con trỏ
         self.save_prefix = "Save_Solo_"
-        # -------------------------------------------
+#---------------------------------------
 
         self.env = SnakeEnv()
         self.current_speed = difficulty
@@ -65,7 +67,7 @@ class Board:
             self.snake_sprites["tail_down"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "tail_down.png").convert_alpha(), sz)
             self.snake_sprites["tail_left"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "tail_left.png").convert_alpha(), sz)
             self.snake_sprites["tail_right"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "tail_right.png").convert_alpha(), sz)
-
+            
             # Body & Turns
             self.snake_sprites["body_vertical"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "body_vertical.png").convert_alpha(), sz)
             self.snake_sprites["body_horizontal"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "body_horizontal.png").convert_alpha(), sz)
@@ -78,7 +80,7 @@ class Board:
             # Items
             self.snake_sprites["food"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "food.png").convert_alpha(), sz)
             self.snake_sprites["poop"] = pygame.transform.scale(pygame.image.load(SPRITE_PATH / "poop.png").convert_alpha(), sz)
-
+        
         except FileNotFoundError:
             print("Lỗi load ảnh rắn")
             sys.exit()
@@ -89,8 +91,9 @@ class Board:
             self.img_main_menu = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "red_button00.png"), (200, 50))
             self.img_resume = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "green_button00.png"), (200, 50))
             self.img_quit_blue = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "blue_button00.png"), (200, 50))
-            # Dùng lại nút xanh cho nút Save
+#---------------------------------------
             self.img_save = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "green_button00.png"), (200, 50))
+#---------------------------------------
         except FileNotFoundError:
             print("Lỗi load ảnh UI")
             sys.exit()
@@ -102,9 +105,10 @@ class Board:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.is_paused = not self.is_paused
-                    # Reset trạng thái nhập liệu khi pause/unpause
+#---------------------------------------
                     self.is_save_input_active = False
                     self.input_text = ""
+#---------------------------------------
                 
                 target_dir = None
                 if event.key == pygame.K_UP or event.key == pygame.K_w: target_dir = (0, -1)
@@ -196,7 +200,7 @@ class Board:
         t = self.font_button.render("Main Menu", True, (255, 255, 255))
         self.screen.blit(t, t.get_rect(center=self.menu_rect.center))
 
-    # --- KHỐI LOGIC MỚI CHO PAUSE VÀ SAVE ---
+#---------------------------------------
     def _draw_pause_ui(self):
         self._draw_overlay()
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
@@ -237,12 +241,9 @@ class Board:
         self.screen.blit(msg, msg.get_rect(center=(cx, cy - 40)))
         
         # 3. VẼ TIỀN TỐ (PREFIX) BÊN NGOÀI
-        # Render chữ prefix ra trước để đo kích thước
         prefix_surf = self.font.render(self.save_prefix, True, (255, 255, 0)) # Màu vàng cho nổi
         
         # Tính toán vị trí:
-        # Tổng chiều rộng = Width(Prefix) + 10px (khoảng cách) + 300px (Input Box)
-        # Để căn giữa cả cụm này
         total_w = prefix_surf.get_width() + 10 + 300
         start_x = cx - total_w // 2
         
@@ -288,10 +289,6 @@ class Board:
                         pygame.key.set_repeat(0)
                         
                     elif event.key == pygame.K_RETURN:
-                        # Chỉ lưu nếu người dùng đã nhập gì đó (hoặc cho phép rỗng nếu muốn Save_PvP_ không)
-                        # Ở đây ta cho phép rỗng, tên file sẽ là "Save_PvP_"
-                        
-                        # GHÉP TIỀN TỐ + INPUT
                         final_filename = self.save_prefix + self.input_text
                         
                         if hasattr(self, 'get_game_state'):
@@ -306,7 +303,6 @@ class Board:
                     elif event.key == pygame.K_BACKSPACE:
                         self.input_text = self.input_text[:-1]
                     else:
-                        # Giới hạn độ dài nhập vào (ngắn hơn chút vì đã có prefix)
                         if len(self.input_text) < 15 and (event.unicode.isalnum() or event.unicode in "_- "):
                             self.input_text += event.unicode
                 return 
@@ -328,7 +324,8 @@ class Board:
                     
                 elif self.quit_rect.collidepoint(event.pos):
                     self.running = False
-                    
+#---------------------------------------
+
     def _draw_overlay(self):
         overlay = pygame.Surface((s.SCREEN_WIDTH, s.SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))

@@ -7,9 +7,11 @@ from snake.scenes.intro import Intro
 from snake.scenes.play_mode import PlayMode 
 from snake.scenes.select_info import SelectInfo
 from snake.scenes.rules import Rules
+#---------------------------------------
 from snake.scenes.play_together import PlayTogether 
 from snake.scenes.battle_royale import Battle
 from snake.scenes.continue_scene import ContinueScene
+#---------------------------------------
 
 class SnakeApp:
     def __init__(self):
@@ -39,17 +41,19 @@ class SnakeApp:
                     pygame.time.wait(150)
                     pygame.event.clear()
                 
-                # --- SỬA ĐOẠN NÀY ---
+#---------------------------------------
                 elif mode == "CONTINUE": 
                     self.current_scene_name = "CONTINUE_SCENE" # Chuyển sang scene mới
                     pygame.time.wait(200)  # Chờ 0.2s để tránh bị click đúp
                     pygame.event.clear()
+#---------------------------------------
 
                 elif mode == "AI":
                     self.current_scene_name = "AI_MODE"
                 elif mode == "QUIT":
                     break
             
+#---------------------------------------
             # -----------------------------------------------------------
             # 2. KHỐI XỬ LÝ CONTINUE SCENE (MỚI)
             # -----------------------------------------------------------
@@ -117,6 +121,7 @@ class SnakeApp:
                     # Chờ một chút để tránh click đúp
                     pygame.time.wait(150)
                     pygame.event.clear()
+#---------------------------------------
             # -----------------------------------------------------------
             # 3. PLAY MODE
             # -----------------------------------------------------------

@@ -4,7 +4,9 @@ from snake import settings as s
 from pathlib import Path
 from snake.core.env_2pvp import SnakeEnv2Pvp
 from snake.scenes.board import Board 
+#---------------------------------------
 import snake.core.save_manager as save_manager
+#---------------------------------------
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
@@ -20,15 +22,14 @@ class Battle(Board):
         self.font_game_over = pygame.font.SysFont('Arial', 50, bold=True)
         self.font_button = pygame.font.SysFont('Arial', 30)
         
+#---------------------------------------
         self.mode_id = "BATTLE_ROYALE"
-        
-        # --- CÁC BIẾN UI SAVE (Đã cập nhật) ---
         self.is_save_input_active = False
         self.input_text = ""
         self.cursor_visible = True
         self.cursor_timer = 0
         self.save_prefix = "Save_PvP_"
-        # --------------------------------------
+#---------------------------------------
 
         self.env = SnakeEnv2Pvp()
         self.snake_sprites_p1 = {}
@@ -103,6 +104,7 @@ class Battle(Board):
                 elif event.key == s.P2_CONTROLS["RIGHT"]: d2 = (1, 0)
                 if d2: self.input_q2.append(d2)
     
+#---------------------------------------
     def _draw_save_input_box(self):
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
         
@@ -115,13 +117,8 @@ class Battle(Board):
         msg = self.font.render("Enter Filename:", True, (200, 200, 200))
         self.screen.blit(msg, msg.get_rect(center=(cx, cy - 40)))
         
-        # 3. VẼ TIỀN TỐ (PREFIX) BÊN NGOÀI
-        # Render chữ prefix ra trước để đo kích thước
+        # 3. VẼ TIỀN TỐ SAVE
         prefix_surf = self.font.render(self.save_prefix, True, (255, 255, 0)) # Màu vàng cho nổi
-        
-        # Tính toán vị trí:
-        # Tổng chiều rộng = Width(Prefix) + 10px (khoảng cách) + 300px (Input Box)
-        # Để căn giữa cả cụm này
         total_w = prefix_surf.get_width() + 10 + 300
         start_x = cx - total_w // 2
         
@@ -167,10 +164,6 @@ class Battle(Board):
                         pygame.key.set_repeat(0)
                         
                     elif event.key == pygame.K_RETURN:
-                        # Chỉ lưu nếu người dùng đã nhập gì đó (hoặc cho phép rỗng nếu muốn Save_PvP_ không)
-                        # Ở đây ta cho phép rỗng, tên file sẽ là "Save_PvP_"
-                        
-                        # GHÉP TIỀN TỐ + INPUT
                         final_filename = self.save_prefix + self.input_text
                         
                         if hasattr(self, 'get_game_state'):
@@ -207,6 +200,7 @@ class Battle(Board):
                     
                 elif self.quit_rect.collidepoint(event.pos):
                     self.running = False
+#---------------------------------------
 
     def _handle_game_over_input(self):
         for event in pygame.event.get():
@@ -340,6 +334,7 @@ class Battle(Board):
         t2 = self.font.render("Main Menu", True, (255, 255, 255))
         self.screen.blit(t2, t2.get_rect(center=self.btn_back_rect.center))
     
+#---------------------------------------
     # --- CÁC HÀM SAVE/LOAD ---
     def get_game_state(self):
         return {
@@ -376,3 +371,4 @@ class Battle(Board):
         if f: self.env.food_pos = (f[0], f[1])
         p = data.get("poop_pos")
         if p: self.env.poop_pos = (p[0], p[1])
+#---------------------------------------

@@ -35,6 +35,7 @@ def save_game(save_name, game_state):
     print(f"Game saved as: {save_name}")
 
 
+#---------------------------------------
 def check_save_exists(save_name):
     """Kiểm tra xem tên save đã tồn tại hay chưa."""
     data = _read_data()
@@ -56,3 +57,4 @@ def delete_save(save_name):
         print(f"Đã xóa save file: {save_name}")
     else:
         print(f"Lỗi: Không tìm thấy save file để xóa: {save_name}")
+#---------------------------------------

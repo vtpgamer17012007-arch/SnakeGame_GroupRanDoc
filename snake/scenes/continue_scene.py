@@ -1,3 +1,4 @@
+#---------------------------------------
 import pygame
 import sys
 from pathlib import Path
@@ -208,3 +209,4 @@ class ContinueScene:
             self._draw()
             pygame.display.flip()
             self.clock.tick(60)
+#---------------------------------------

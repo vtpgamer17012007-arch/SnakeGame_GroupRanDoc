@@ -3,7 +3,7 @@ import sys
 from snake import settings as s
 from snake.scenes.solo_leveling import SoloLeveling
 from snake.scenes.intro import Intro
-from snake import save_manager
+import snake.core.save_manager as save_manager
 from pathlib import Path
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"

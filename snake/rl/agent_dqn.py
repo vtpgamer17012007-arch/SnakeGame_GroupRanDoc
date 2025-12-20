@@ -19,7 +19,7 @@ class DQNAgent:
     def get_action(self, state, training=True): # Thêm tham số training
         # Chiến thuật Epsilon-Greedy: Răng càng chơi nhiều càng bớt đi lung tung
         if training:
-            self.epsilon = max(10, 500 - self.n_games)
+            self.epsilon = max(10, 300 - self.n_games)
         else:
             self.epsilon = 0 # Khi xem kết quả, tắt hoàn toàn ngẫu nhiên
         final_move = 0

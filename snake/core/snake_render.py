@@ -1,7 +1,7 @@
 import pygame
 import sys
 from snake import settings as s
-from snake import save_manager
+import snake.core.save_manager as save_manager
 from pathlib import Path
 from snake.core.env_snake import SnakeEnv
 

@@ -11,9 +11,15 @@ from snake import save_manager
 from snake.scenes.play_together import PlayTogether
 from snake.scenes.battle_royale import BattleRoyal
 from snake.scenes.credit import Credit
+from snake.core.sound_manager import SoundManager
+from snake.scenes.setting import SettingPopup
 
 class SnakeApp:
     def __init__(self):
+        try:
+            pygame.mixer.pre_init(frequency=48000, size=-16, channels=2, buffer=1024)
+        except Exception as e:
+            print(f"Lỗi cài đặt âm thanh: {e}")
         pygame.init()
         pygame.font.init()
         self.screen = pygame.display.set_mode((s.SCREEN_WIDTH, s.SCREEN_HEIGHT))

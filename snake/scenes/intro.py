@@ -3,6 +3,8 @@ import sys
 from snake import settings as s
 from snake import save_manager
 from pathlib import Path
+from snake.core.sound_manager import SoundManager
+from snake.scenes.setting import SettingPopup
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
@@ -25,6 +27,12 @@ class Intro:
         self.selected_mode = None
         self.selected_save = None
         
+        self.sound_manager = SoundManager()
+        self.sound_manager.play_music("menu")
+        
+        self.show_setting = False
+        self.setting_popup = SettingPopup(self.screen)
+        
         self.difficulty = s.DIFFICULTY_EASY
         
 
@@ -41,6 +49,29 @@ class Intro:
             self.img_continue_button = pygame.image.load(ASSETS_PATH / "continue_button.png").convert_alpha()
             self.img_ai_button = pygame.image.load(ASSETS_PATH / "ai_button.png").convert_alpha()
             self.img_credit_button = pygame.image.load(ASSETS_PATH / "credit_button.png").convert_alpha()
+            icon_size = (120, 80) 
+            
+            try:
+                # Load ảnh gốc
+                raw_gear = pygame.image.load(ASSETS_PATH / "setting_button.png").convert_alpha()
+                self.img_gear_normal = pygame.transform.smoothscale(raw_gear, icon_size)
+                
+                # Load ảnh Hover (nếu có), nếu không có thì tự tạo hiệu ứng
+                try:
+                    raw_hover = pygame.image.load(ASSETS_PATH / "setting_button_hover.png").convert_alpha()
+                    self.img_gear_hover = pygame.transform.smoothscale(raw_hover, icon_size)
+                except FileNotFoundError:
+                    # Tự tạo hiệu ứng hover (làm sáng ảnh lên) nếu thiếu file
+                    self.img_gear_hover = self.img_gear_normal.copy()
+                    # Cộng thêm màu trắng nhẹ để làm sáng
+                    self.img_gear_hover.fill((30, 30, 30), special_flags=pygame.BLEND_RGB_ADD) 
+                    
+            except FileNotFoundError:
+                print("Thiếu file setting_button.png! Tạo nút tạm màu đỏ.")
+                self.img_gear_normal = pygame.Surface(icon_size)
+                self.img_gear_normal.fill((100, 100, 100)) # Màu xám
+                self.img_gear_hover = pygame.Surface(icon_size)
+                self.img_gear_hover.fill((150, 150, 150)) # Màu xám sáng hơn
             
 
             panel = pygame.image.load(ASSETS_PATH / "grey_panel.png").convert_alpha()
@@ -65,6 +96,15 @@ class Intro:
     def _define_layout(self):
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
         # Tính toán vị trí để căn giữa 3 nút nhỏ
+        btn_width = 120  # Chiều rộng
+        btn_height = 80 # Chiều cao
+        
+        margin_x = 8
+        margin_y = 10# Cách lề trên 30px
+        
+        rect_x = s.SCREEN_WIDTH - btn_width - margin_x
+        rect_y = margin_y
+        self.setting_button_rect = pygame.Rect(rect_x, rect_y, btn_width, btn_height)
         
 
         self.input_rect = pygame.Rect(cx - 150, cy - 50, 300, 40)
@@ -96,9 +136,20 @@ class Intro:
             if event.type == pygame.QUIT:
                 self.running = False
                 self.selected_mode = "QUIT"
+
+            if self.show_setting:
+                is_open = self.setting_popup.handle_input(event)
+                if not is_open:
+                    self.show_setting = False
+                continue
             
             clicked = (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1)
 
+            if clicked and self.setting_button_rect.collidepoint(event.pos):
+                self.sound_manager.play_sfx("click")
+                self.show_setting = True
+                continue
+            
             if not self.showing_load_menu:
                 
                 
@@ -106,28 +157,37 @@ class Intro:
                     self.input_active = self.input_rect.collidepoint(event.pos)
                     
                     if self.play_button_rect.collidepoint(event.pos):
+                            self.sound_manager.play_sfx("click")
                             self.selected_mode = "PLAY"; self.running = False
                     if self.ai_button_rect.collidepoint(event.pos):
+                            self.sound_manager.play_sfx("click")
                             self.selected_mode = "AI"; self.running = False
                     if self.continue_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click")
                         self.showing_load_menu = True
                         self.save_list = save_manager.get_save_list()
                         self.current_page = 0
                         self._build_current_page()
                     if self.credit_button_rect.collidepoint(event.pos):
+                            self.sound_manager.play_sfx("click")
                             self.selected_mode = "CREDIT"; self.running = False
             else:
                 if clicked:
-                    if self.back_button_rect.collidepoint(event.pos): self.showing_load_menu = False
+                    if self.back_button_rect.collidepoint(event.pos): 
+                        self.sound_manager.play_sfx("click")
+                        self.showing_load_menu = False
                     
                     total_pages = (len(self.save_list) + self.SAVES_PER_PAGE - 1) // self.SAVES_PER_PAGE
                     if self.next_page_rect.collidepoint(event.pos) and self.current_page < total_pages - 1:
+                        self.sound_manager.play_sfx("click")
                         self.current_page += 1; self._build_current_page()
                     if self.prev_page_rect.collidepoint(event.pos) and self.current_page > 0:
+                        self.sound_manager.play_sfx("click")
                         self.current_page -= 1; self._build_current_page()
                     
                     for i, rect in enumerate(self.save_rects):
                         if rect.collidepoint(event.pos):
+                            self.sound_manager.play_sfx("click")
                             self.selected_mode = "LOAD"
                             idx = self.current_page * self.SAVES_PER_PAGE + i
                             self.selected_save = self.save_list[idx]
@@ -157,6 +217,12 @@ class Intro:
             self.Hover(self.img_continue_button, self.continue_button_rect)
             self.Hover(self.img_ai_button, self.ai_button_rect) 
             self.Hover(self.img_credit_button, self.credit_button_rect)
+
+            # Kiểm tra chuột có nằm trên nút setting không
+            if self.setting_button_rect.collidepoint(pygame.mouse.get_pos()):
+                self.screen.blit(self.img_gear_hover, self.setting_button_rect)
+            else:
+                self.screen.blit(self.img_gear_normal, self.setting_button_rect)
             
 
         else:
@@ -181,6 +247,13 @@ class Intro:
                 t = self.font_menu.render("<", True, (255, 255, 255))
                 self.screen.blit(t, t.get_rect(center=self.prev_page_rect.center))
 
+        if self.setting_button_rect.collidepoint(pygame.mouse.get_pos()):
+            self.screen.blit(self.img_gear_hover, self.setting_button_rect)
+        else:
+            self.screen.blit(self.img_gear_normal, self.setting_button_rect)
+        # Vẽ Popup Setting lên trên cùng
+        if self.show_setting:
+            self.setting_popup.draw()
         
 
     def run(self):

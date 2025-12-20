@@ -5,6 +5,8 @@ from snake.scenes.solo_leveling import SoloLeveling
 from snake.scenes.intro import Intro
 from snake import save_manager
 from pathlib import Path
+from snake.core.sound_manager import SoundManager
+from snake.scenes.setting import SettingPopup
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 ONE_PLAYER_ASSETS_PATH = Path(__file__).parent.parent / "assets/1_player_asset"
@@ -37,6 +39,12 @@ class SelectInfo:
 
         self.font_input = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 37)
 
+        self.sound_manager = SoundManager() 
+        self.sound_manager.play_music("menu")
+        
+        self.show_setting = False
+        self.setting_popup = SettingPopup(self.screen)
+
         self._define_layout()
         self._load_assets()
 
@@ -63,6 +71,21 @@ class SelectInfo:
         self.img_2_player_info = pygame.image.load(ASSETS_PATH / "2_player_info.png").convert_alpha()
         self.img_2_player_info_next = pygame.image.load(ASSETS_PATH / "2_player_info_next.png").convert_alpha()
 
+        btn_w, btn_h = 120, 80 
+        try:
+            raw_gear = pygame.image.load(ASSETS_PATH / "setting_button.png").convert_alpha()
+            self.img_gear_normal = pygame.transform.smoothscale(raw_gear, (btn_w, btn_h))
+            try:
+                raw_hover = pygame.image.load(ASSETS_PATH / "setting_button_hover.png").convert_alpha()
+                self.img_gear_hover = pygame.transform.smoothscale(raw_hover, (btn_w, btn_h))
+            except FileNotFoundError:
+                self.img_gear_hover = self.img_gear_normal.copy()
+                self.img_gear_hover.fill((30, 30, 30), special_flags=pygame.BLEND_RGB_ADD)
+        except FileNotFoundError:
+                # Tạo nút giả màu xám nếu thiếu ảnh
+                self.img_gear_normal = pygame.Surface((btn_w, btn_h)); self.img_gear_normal.fill((100,100,100))
+                self.img_gear_hover = pygame.Surface((btn_w, btn_h)); self.img_gear_hover.fill((150,150,150))
+            # ---------------------------------------------------------------
 
         # =====================================================
         # load avatar
@@ -92,21 +115,41 @@ class SelectInfo:
 
         self.player_info_next_button_rect = pygame.Rect(430, 600, 275, 70)
 
+        #vị trí vẽ nút setting
+        btn_width, btn_height = 120, 80
+        rect_x = s.SCREEN_WIDTH - btn_width - 8
+        rect_y = 10
+        self.setting_button_rect = pygame.Rect(rect_x, rect_y, btn_width, btn_height)
+
 
     def _handle_input(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
                 self.selected_mode = "QUIT"
+
+            if self.show_setting:
+                if not self.setting_popup.handle_input(event):
+                    self.show_setting = False
+                continue 
             
             clicked = (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1)
+            # -----------------------------------------------------
+
+            if clicked and self.setting_button_rect.collidepoint(event.pos):
+                self.sound_manager.play_sfx("click")
+                self.show_setting = True
+                continue
+            
             if event.type == pygame.KEYDOWN:
-                    if self.nickname_player1_active:
-                        if event.key == pygame.K_BACKSPACE: self.nickname_player1 = self.nickname_player1[:-1]
-                        elif len(self.nickname_player1) < 15: self.nickname_player1 += event.unicode
-                    if self.nickname_player2_active:
-                        if event.key == pygame.K_BACKSPACE: self.nickname_player2 = self.nickname_player2[:-1]
-                        elif len(self.nickname_player2) < 15: self.nickname_player2 += event.unicode
+                if event.key != pygame.K_RETURN: 
+                    self.sound_manager.play_sfx("input")
+                if self.nickname_player1_active:
+                    if event.key == pygame.K_BACKSPACE: self.nickname_player1 = self.nickname_player1[:-1]
+                    elif len(self.nickname_player1) < 15: self.nickname_player1 += event.unicode
+                if self.nickname_player2_active:
+                    if event.key == pygame.K_BACKSPACE: self.nickname_player2 = self.nickname_player2[:-1]
+                    elif len(self.nickname_player2) < 15: self.nickname_player2 += event.unicode
 
             
 
@@ -116,15 +159,20 @@ class SelectInfo:
                     self.nickname_player1_active = self.nickname_player_1_blank_rect.collidepoint(event.pos)
                     # difficulty
                     if self.difficulty_easy_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click") 
                         self.difficulty = s.DIFFICULTY_EASY
                     elif self.difficulty_normal_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click") 
                         self.difficulty = s.DIFFICULTY_NORMAL
                     elif self.difficulty_hard_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click") 
                         self.difficulty = s.DIFFICULTY_HARD
                     # avatar
                     if self.next_avatar_player_1_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click") 
                         self.avatar_idx1 = (self.avatar_idx1 + 1) % len(s.AVATAR_LIST)
                     elif self.back_avatar_player_1_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click") 
                         self.avatar_idx1 = (self.avatar_idx1 - 1) % len(s.AVATAR_LIST)
                     
             elif self.mode == "PLAY_TOGETHER" or self.mode == "BATTLE_ROYALE":
@@ -134,18 +182,24 @@ class SelectInfo:
                     self.nickname_player2_active = self.nickname_player_2_blank_rect.collidepoint(event.pos)
                     # avatar
                     if self.next_avatar_player_1_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click") 
                         self.avatar_idx1 = (self.avatar_idx1 + 1) % len(s.AVATAR_LIST)
                     elif self.back_avatar_player_1_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click") 
                         self.avatar_idx1 = (self.avatar_idx1 - 1) % len(s.AVATAR_LIST)
                     elif self.next_avatar_player_2_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click") 
                         self.avatar_idx2 = (self.avatar_idx2 + 1) % len(s.AVATAR_LIST)
                     elif self.back_avatar_player_2_button_rect.collidepoint(event.pos):
+                        self.sound_manager.play_sfx("click") 
                         self.avatar_idx2 = (self.avatar_idx2 - 1) % len(s.AVATAR_LIST)
 
             if clicked:
                 if self.player_info_next_button_rect.collidepoint(event.pos): #nút let's go 
+                    self.sound_manager.play_sfx("click") 
                     self.running = False
                 elif self.back_button_rect.collidepoint(event.pos): #nút back 
+                    self.sound_manager.play_sfx("click") 
                     self.mode = "QUIT"
                     self.running = False
                 
@@ -199,8 +253,19 @@ class SelectInfo:
             self.screen.blit(self.img_avatars[self.avatar_idx2], (174, 602))
 
         self.screen.blit(self.img_back_button, self.back_button_rect)
+
+    
         if self.back_button_rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(self.img_back_hover_button, self.back_button_rect)
+
+        # vẽ nút setting
+        if self.setting_button_rect.collidepoint(pygame.mouse.get_pos()):
+            self.screen.blit(self.img_gear_hover, self.setting_button_rect)
+        else:
+            self.screen.blit(self.img_gear_normal, self.setting_button_rect)
+
+        if self.show_setting:
+            self.setting_popup.draw()
 
     def run(self):
         while self.running:

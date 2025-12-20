@@ -5,6 +5,7 @@ from snake import settings as s
 from snake.core.env_2p import SnakeEnv2P
 from snake.scenes.board import Board # Kế thừa để dùng lại hàm load ảnh
 from pathlib import Path
+from snake.core.sound_manager import SoundManager
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
@@ -22,6 +23,7 @@ class PlayTogether(Board):
         self.font = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 24)
         self.font_game_over = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 55)
         self.font_button = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 37)
+        self.font_big = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 55)
         
         self.env = SnakeEnv2P()
         self.snake_sprites = {}
@@ -30,6 +32,10 @@ class PlayTogether(Board):
         self._load_snake_sprites(self.snake_sprites_p1, "snake_sprites")
         self._load_snake_sprites(self.snake_sprites_p2, "snake_sprites2")
         self._load_ui_assets()     # Dùng lại hàm của cha
+
+        self.sound_manager = SoundManager() 
+        self.sound_manager.play_music("game") 
+
         
         # Queue input cho 2 người chơi
         self.input_q1 = []
@@ -70,14 +76,19 @@ class PlayTogether(Board):
                 if event.key == pygame.K_ESCAPE:
                     # toggle pause
                     self.is_paused = not self.is_paused
-
+                    self.sound_manager.play_sfx("click")
+                played_sound = False
                 # Input Player 1 (Mũi tên)
                 d1 = None
                 if event.key == s.P1_CONTROLS["UP"]: d1 = (0, -1)
                 elif event.key == s.P1_CONTROLS["DOWN"]: d1 = (0, 1)
                 elif event.key == s.P1_CONTROLS["LEFT"]: d1 = (-1, 0)
                 elif event.key == s.P1_CONTROLS["RIGHT"]: d1 = (1, 0)
-                if d1: self.input_q1.append(d1)
+                if d1: 
+                    self.input_q1.append(d1)
+                    if not played_sound:
+                        self.sound_manager.play_sfx("input")
+                        played_sound = True
 
                 # Input Player 2 (WASD)
                 d2 = None
@@ -85,7 +96,11 @@ class PlayTogether(Board):
                 elif event.key == s.P2_CONTROLS["DOWN"]: d2 = (0, 1)
                 elif event.key == s.P2_CONTROLS["LEFT"]: d2 = (-1, 0)
                 elif event.key == s.P2_CONTROLS["RIGHT"]: d2 = (1, 0)
-                if d2: self.input_q2.append(d2)
+                if d2: 
+                    self.input_q2.append(d2)
+                    if not played_sound:
+                        self.sound_manager.play_sfx("input")
+                        played_sound = True
 
     def _get_next_move(self, queue, current_dir):
         if not queue: return current_dir
@@ -99,10 +114,24 @@ class PlayTogether(Board):
         if self.env.game_over: return
 
         # Lấy move tiếp theo cho P1 và P2
+        # Lưu điểm cũ để so sánh
+        old_p1 = self.env.p1_score
+        old_p2 = self.env.p2_score
+
         d1 = self._get_next_move(self.input_q1, self.env.p1_dir)
         d2 = self._get_next_move(self.input_q2, self.env.p2_dir)
         
         self.env.step(d1, d2)
+
+        #  Logic âm thanh
+        if self.env.p1_score > old_p1 or self.env.p2_score > old_p2:
+            self.sound_manager.play_sfx("eat")
+        elif self.env.p1_score < old_p1 or self.env.p2_score < old_p2:
+            self.sound_manager.play_sfx("poop")
+
+        if self.env.game_over:
+            self.sound_manager.stop_music()
+            self.sound_manager.play_sfx("die")
     def _load_snake_sprites(self, sprite_dict, folder_name):
         try:
             SPRITE_PATH = Path(__file__).parent.parent / f"assets/{folder_name}"
@@ -277,11 +306,12 @@ class PlayTogether(Board):
                 self.running = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.is_paused = False
-
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self.resume_rect.collidepoint(event.pos):
+                    self.sound_manager.play_sfx("click") 
                     self.is_paused = False
                 if self.save_quit_rect.collidepoint(event.pos):
+                    self.sound_manager.play_sfx("click") 
                     # For 2-player mode we simply quit to intro on Save & Quit
                     self.running = False
 
@@ -291,11 +321,18 @@ class PlayTogether(Board):
                 self.running = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self.play_again_rect.collidepoint(event.pos):
+                    self.sound_manager.play_sfx("click")
                     # Restart the 2-player game
                     self.env.reset()
                     self.input_q1 = []
                     self.input_q2 = []
+
+                    self.sound_manager.stop_sfx("die")
+                    self.sound_manager.play_music("game")
+                    
                 elif self.btn_back_rect.collidepoint(event.pos):
+                    self.sound_manager.play_sfx("click")
+                    self.sound_manager.stop_sfx("die")
                     self.running = False # Quay về Intro
 
     def run(self):
@@ -316,4 +353,4 @@ class PlayTogether(Board):
 
             pygame.display.update()
             self.clock.tick(10)
-        return "INTRO"
+        return "INTRO" 

@@ -4,6 +4,8 @@ from snake import settings as s
 from snake import save_manager
 from pathlib import Path
 from snake.core.env_snake import SnakeEnv
+from snake.core.sound_manager import SoundManager
+from snake.scenes.setting import SettingPopup
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 ONE_PLAYER_ASSETS_PATH = Path(__file__).parent.parent / "assets/1_player_asset"
@@ -39,6 +41,13 @@ class SoloLeveling:
 
         self.input_queue = []
         self.snake_sprites = {}
+
+        self.sound_manager = SoundManager() 
+        self.sound_manager.play_music("menu")
+        
+        self.show_setting = False
+        self.setting_popup = SettingPopup(self.screen)
+
         self._load_snake_sprites()
         self._load_ui_assets()
         
@@ -117,6 +126,7 @@ class SoloLeveling:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.is_paused = not self.is_paused
+                    self.sound_manager.play_sfx("click")
                 
                 # Xác định hướng
                 target_dir = None
@@ -130,6 +140,7 @@ class SoloLeveling:
                     target_dir = (1, 0)
                 
                 if target_dir:
+                    self.sound_manager.play_sfx("input")
                     if self.input_queue:
                         last_dir = self.input_queue[-1]
                     else:
@@ -142,7 +153,6 @@ class SoloLeveling:
                         # Giới hạn hàng đợi để tránh lag
                         if len(self.input_queue) < 2:
                             self.input_queue.append(target_dir)
-
     def _update_game(self):
         if not self.running: return 
 
@@ -150,13 +160,25 @@ class SoloLeveling:
             next_move = self.input_queue.pop(0)
             self.env.direction = next_move
 
+        
+        old_score = self.env.score
+
         state, reward, done, info = self.env.step(self.env.direction)
+
+        if self.env.score > old_score: 
+            self.sound_manager.play_sfx("eat")
+    
+        elif self.env.score < old_score and not done:
+            self.sound_manager.play_sfx("poop")
 
         if done:
             self.is_game_over = True
+            self.sound_manager.play_sfx("die") 
+            self.sound_manager.stop_music()
             if self.was_loaded_game and self.first_frame and self.save_name_if_loaded:
                 save_manager.delete_save(self.save_name_if_loaded)
                 self.loaded_and_died_instantly = True
+
 
     def _draw_elements(self):
         
@@ -289,9 +311,15 @@ class SoloLeveling:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: self.running = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                menu_rect = self.play_again_rect if self.loaded_and_died_instantly else self.menu_rect
+                if self.play_again_rect.collidepoint(event.pos) or menu_rect.collidepoint(event.pos):
+                     self.sound_manager.stop_sfx("die")
+                     self.sound_manager.play_sfx("click")
                 if not self.loaded_and_died_instantly and self.play_again_rect.collidepoint(event.pos):
                     self.env.reset(); self.is_game_over = False
-                menu_rect = self.play_again_rect if self.loaded_and_died_instantly else self.menu_rect
+                    self.sound_manager.stop_sfx("die")
+                    self.sound_manager.play_sfx("click")
+                    self.sound_manager.play_music("game")
                 if menu_rect.collidepoint(event.pos): self.running = False
 
     def _handle_pause_input(self):
@@ -301,6 +329,7 @@ class SoloLeveling:
                 self.is_paused = False; self.is_confirming_save = False; self.is_renaming_save = False
             
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                self.sound_manager.play_sfx("click")
                 if self.is_renaming_save:
                     if self.rename_save_button_rect.collidepoint(event.pos) and self.new_save_name:
                         save_manager.save_game(self.new_save_name, self.game_state_to_save); self.running = False
@@ -324,10 +353,15 @@ class SoloLeveling:
         
         if self.is_renaming_save:
             for event in pygame.event.get(pygame.KEYDOWN):
-                if event.key == pygame.K_BACKSPACE: self.new_save_name = self.new_save_name[:-1]
-                elif len(self.new_save_name) < 20: self.new_save_name += event.unicode
+                if event.key == pygame.K_BACKSPACE:
+                    self.sound_manager.play_sfx("input")
+                    self.new_save_name = self.new_save_name[:-1]
+                elif len(self.new_save_name) < 20: 
+                    self.sound_manager.play_sfx("input")
+                    self.new_save_name += event.unicode
 
     def run(self):
+        self.sound_manager.play_music("game")
         while self.running:
             if self.is_paused: self._handle_pause_input()
             elif self.is_game_over: self._handle_game_over_input()

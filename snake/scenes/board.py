@@ -4,6 +4,7 @@ from snake import settings as s
 from snake import save_manager
 from pathlib import Path
 from snake.core.env_snake import SnakeEnv
+from snake.core.sound_manager import SoundManager
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
@@ -53,6 +54,8 @@ class Board:
         self.confirm_new_save_rect = pygame.Rect(cx - 100, cy + 70, 200, 50)
         self.rename_input_rect = pygame.Rect(cx - 150, cy, 300, 50)
         self.rename_save_button_rect = pygame.Rect(cx - 100, cy + 70, 200, 50)
+        self.sound_manager = SoundManager() 
+        self.sound_manager.play_music("game")
 
     def _load_snake_sprites(self):
         try:
@@ -113,6 +116,7 @@ class Board:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    self.sound_manager.play_sfx("click")
                     self.is_paused = not self.is_paused
                 
                 # Xác định hướng
@@ -127,6 +131,7 @@ class Board:
                     target_dir = (1, 0)
                 
                 if target_dir:
+                    self.sound_manager.play_sfx("input")
                     if self.input_queue:
                         last_dir = self.input_queue[-1]
                     else:
@@ -141,6 +146,7 @@ class Board:
                             self.input_queue.append(target_dir)
 
     def _update_game(self):
+        
         if not self.running: return 
 
         if self.input_queue:
@@ -148,13 +154,18 @@ class Board:
             self.env.direction = next_move
 
         state, reward, done, info = self.env.step(self.env.direction)
+        if reward == 10: 
+            self.sound_manager.play_sfx("eat")
+        elif reward == -5:
+            self.sound_manager.play_sfx("poop")
 
         if done:
             self.is_game_over = True
+            self.sound_manager.play_sfx("die") 
+            self.sound_manager.stop_music()
             if self.was_loaded_game and self.first_frame and self.save_name_if_loaded:
                 save_manager.delete_save(self.save_name_if_loaded)
                 self.loaded_and_died_instantly = True
-
     def _draw_elements(self):
         self.screen.fill(s.COLOR_BACKGROUND)
         snake_pos = self.env.snake_pos
@@ -282,28 +293,85 @@ class Board:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: self.running = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                menu_rect = self.play_again_rect if self.loaded_and_died_instantly else self.menu_rect
+                if self.play_again_rect.collidepoint(event.pos) or menu_rect.collidepoint(event.pos):
+                    if hasattr(self, 'sound_manager'):
+                        self.sound_manager.play_sfx("click")
                 if not self.loaded_and_died_instantly and self.play_again_rect.collidepoint(event.pos):
                     self.env.reset(); self.is_game_over = False
                 menu_rect = self.play_again_rect if self.loaded_and_died_instantly else self.menu_rect
                 if menu_rect.collidepoint(event.pos): self.running = False
 
+
+    # def _handle_pause_input(self):
+    #     for event in pygame.event.get():
+    #         if event.type == pygame.QUIT: self.running = False
+    #         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+    #             self.is_paused = False; self.is_confirming_save = False; self.is_renaming_save = False
+            
+    #         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+    #             if self.is_renaming_save:
+    #                 if self.rename_save_button_rect.collidepoint(event.pos) and self.new_save_name:
+    #                     save_manager.save_game(self.new_save_name, self.game_state_to_save); self.running = False
+    #             elif self.is_confirming_save:
+    #                 if self.confirm_overwrite_rect.collidepoint(event.pos):
+    #                     save_manager.save_game(self.proposed_save_name, self.game_state_to_save); self.running = False
+    #                 if self.confirm_new_save_rect.collidepoint(event.pos):
+    #                     self.is_confirming_save = False; self.is_renaming_save = True; self.new_save_name = self.proposed_save_name
+    #             else:
+    #                 if self.resume_rect.collidepoint(event.pos): self.is_paused = False
+    #                 if self.save_quit_rect.collidepoint(event.pos):
+    #                     self.game_state_to_save = {
+    #                         "snake_pos": self.env.snake_pos, "direction": self.env.direction,
+    #                         "food_pos": self.env.food_pos, "poops": self.env.poops,
+    #                         "score": self.env.score, "speed": self.current_speed, "nickname": self.nickname
+    #                     }
+    #                     self.proposed_save_name = f"{self.nickname} - Score {self.env.score}"
+    #                     if save_manager.check_save_exists(self.proposed_save_name): self.is_confirming_save = True
+    #                     else:
+    #                         save_manager.save_game(self.proposed_save_name, self.game_state_to_save); self.running = False
     def _handle_pause_input(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: self.running = False
+            if event.type == pygame.QUIT: 
+                self.running = False
+        
+            if self.is_renaming_save:
+                if event.type == pygame.KEYDOWN:
+                    self.sound_manager.play_sfx("input")
+                    if event.key == pygame.K_BACKSPACE: 
+                        self.new_save_name = self.new_save_name[:-1]
+                    elif len(self.new_save_name) < 20: 
+                        self.new_save_name += event.unicode
+                
+                # Xử lý click chuột khi đang đổi tên (chỉ nút Save hoạt động)
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if self.rename_save_button_rect.collidepoint(event.pos) and self.new_save_name:
+                        self.sound_manager.play_sfx("click")
+                        save_manager.save_game(self.new_save_name, self.game_state_to_save)
+                        self.running = False
+                return 
+            # --------------------------------------
+
+            
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.is_paused = False; self.is_confirming_save = False; self.is_renaming_save = False
+                self.is_paused = False
+                self.is_confirming_save = False
+                self.is_renaming_save = False
             
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if self.is_renaming_save:
-                    if self.rename_save_button_rect.collidepoint(event.pos) and self.new_save_name:
-                        save_manager.save_game(self.new_save_name, self.game_state_to_save); self.running = False
-                elif self.is_confirming_save:
+                self.sound_manager.play_sfx("click")
+                
+                if self.is_confirming_save:
                     if self.confirm_overwrite_rect.collidepoint(event.pos):
-                        save_manager.save_game(self.proposed_save_name, self.game_state_to_save); self.running = False
+                        save_manager.save_game(self.proposed_save_name, self.game_state_to_save)
+                        self.running = False
                     if self.confirm_new_save_rect.collidepoint(event.pos):
-                        self.is_confirming_save = False; self.is_renaming_save = True; self.new_save_name = self.proposed_save_name
+                        self.is_confirming_save = False
+                        self.is_renaming_save = True
+                        self.new_save_name = self.proposed_save_name
                 else:
-                    if self.resume_rect.collidepoint(event.pos): self.is_paused = False
+                    if self.resume_rect.collidepoint(event.pos): 
+                        self.is_paused = False
                     if self.save_quit_rect.collidepoint(event.pos):
                         self.game_state_to_save = {
                             "snake_pos": self.env.snake_pos, "direction": self.env.direction,
@@ -311,12 +379,16 @@ class Board:
                             "score": self.env.score, "speed": self.current_speed, "nickname": self.nickname
                         }
                         self.proposed_save_name = f"{self.nickname} - Score {self.env.score}"
-                        if save_manager.check_save_exists(self.proposed_save_name): self.is_confirming_save = True
+                        
+                        if save_manager.check_save_exists(self.proposed_save_name): 
+                            self.is_confirming_save = True
                         else:
-                            save_manager.save_game(self.proposed_save_name, self.game_state_to_save); self.running = False
+                            save_manager.save_game(self.proposed_save_name, self.game_state_to_save)
+                            self.running = False
         
         if self.is_renaming_save:
             for event in pygame.event.get(pygame.KEYDOWN):
+                self.sound_manager.play_sfx("input") 
                 if event.key == pygame.K_BACKSPACE: self.new_save_name = self.new_save_name[:-1]
                 elif len(self.new_save_name) < 20: self.new_save_name += event.unicode
 

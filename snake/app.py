@@ -7,9 +7,9 @@ from snake.scenes.intro import Intro
 from snake.scenes.play_mode import PlayMode 
 from snake.scenes.select_info import SelectInfo
 from snake.scenes.rules import Rules
-from snake import save_manager
-from snake.scenes.play_together import PlayTogether
-from snake.scenes.battle_royale import BattleRoyal
+from snake.scenes.play_together import PlayTogether 
+from snake.scenes.battle_royale import Battle
+from snake.scenes.continue_scene import ContinueScene
 from snake.scenes.credit import Credit
 
 class SnakeApp:
@@ -30,20 +30,24 @@ class SnakeApp:
 
     def run(self):
         while True:
-            # 1. INTRO: Scene Mở đầu (Chọn Play/Load/Quit)
+            # -----------------------------------------------------------
+            # 1. INTRO
+            # -----------------------------------------------------------
             if self.current_scene_name == "INTRO":
                 self.current_scene_obj = Intro(self.screen)
-                mode, save_name = self.current_scene_obj.run() # mode: PLAY, LOAD, QUIT, AI
+                mode, _ = self.current_scene_obj.run()
 
                 if mode == "PLAY":
-                    self.current_scene_name = "PLAY_MODE" # Chuyển đến Scene Chọn Mode
-                elif mode == "LOAD":
-                    state = save_manager.load_game(save_name)
-                    if state:
-                        self.current_scene_obj = SoloLeveling(self.screen, state["nickname"], state["speed"], state, save_name)
-                        self.current_scene_name = "SOLO_LEVELING"
-                    else:
-                        self.current_scene_name = "INTRO"
+                    self.current_scene_name = "PLAY_MODE"
+                    pygame.time.wait(150)
+                    pygame.event.clear()
+                
+                # --- SỬA ĐOẠN NÀY ---
+                elif mode == "CONTINUE": 
+                    self.current_scene_name = "CONTINUE_SCENE" # Chuyển sang scene mới
+                    pygame.time.wait(200)  # Chờ 0.2s để tránh bị click đúp
+                    pygame.event.clear()
+
                 elif mode == "AI":
                     self.current_scene_name = "AI_MODE"
                 elif mode == "CREDIT":
@@ -51,24 +55,99 @@ class SnakeApp:
                 elif mode == "QUIT":
                     break
             
-            # 2. PLAYMODE: Scene Chọn Chế độ (Solo, Battle Royale)
-            # Lưu ý: Scene PlayMode phải trả về tên chế độ (e.g., "SOLO_LEVELING")
+            # -----------------------------------------------------------
+            # 2. KHỐI XỬ LÝ CONTINUE SCENE (MỚI)
+            # -----------------------------------------------------------
+            # Đảm bảo đoạn này nằm ngang hàng (cùng lề) với if self.current_scene_name == "INTRO"
+            elif self.current_scene_name == "CONTINUE_SCENE":
+                self.current_scene_obj = ContinueScene(self.screen)
+                action, data = self.current_scene_obj.run()
+
+                if action == "BACK":
+                    self.current_scene_name = "INTRO"
+                    pygame.time.wait(150)
+                    pygame.event.clear()
+                
+                elif action == "LOAD_GAME" and data:
+                    # --- GIẢI PHÁP CHỐNG XUNG ĐỘT DỮ LIỆU ---
+                    
+                    # 1. Đọc "Hộ chiếu" (Mode ID) từ file save
+                    mode_to_load = data.get("mode") 
+                    
+                    print(f"Loading data for mode: {mode_to_load}") # Debug xem đang load cái gì
+
+                    # 2. Phân luồng khởi tạo (Router)
+                    # App tự động chuyển scene dựa trên dữ liệu, không quan tâm người dùng đang chọn tab nào
+                    
+                    # === TRƯỜNG HỢP 1: SOLO LEVELING ===
+                    if mode_to_load == "SOLO_LEVELING":
+                        # Lấy thông tin cần thiết để khởi tạo class
+                        self.nickname_player1 = data.get("nickname", "Player")
+                        self.difficulty = data.get("difficulty", s.BASE_SPEED)
+                        
+                        # Khởi tạo đúng Class Solo
+                        self.current_scene_obj = SoloLeveling(self.screen, self.nickname_player1, self.difficulty)
+                        # Đổ dữ liệu vào
+                        self.current_scene_obj.restore_game_state(data)
+                        # Chuyển scene
+                        self.current_scene_name = "SOLO_LEVELING"
+
+                    # === TRƯỜNG HỢP 2: PLAY TOGETHER ===
+                    elif mode_to_load == "PLAY_TOGETHER":
+                        name1 = data.get("name1", "Player 1")
+                        name2 = data.get("name2", "Player 2")
+                        
+                        # Khởi tạo đúng Class PlayTogether
+                        self.current_scene_obj = PlayTogether(self.screen, name1, name2)
+                        # Đổ dữ liệu vào (Code hàm restore ở bước trước)
+                        self.current_scene_obj.restore_game_state(data)
+                        # Chuyển scene
+                        self.current_scene_name = "PLAY_TOGETHER"
+
+                    # === TRƯỜNG HỢP 3: BATTLE ROYALE ===
+                    elif mode_to_load == "BATTLE_ROYALE":
+                        name1 = data.get("name1", "Player 1")
+                        name2 = data.get("name2", "Player 2")
+                        
+                        # Khởi tạo đúng Class Battle
+                        self.current_scene_obj = Battle(self.screen, name1, name2)
+                        # Đổ dữ liệu vào (Code hàm restore ở bước trước)
+                        self.current_scene_obj.restore_game_state(data)
+                        # Chuyển scene
+                        self.current_scene_name = "BATTLE_ROYALE"
+                    
+                    else:
+                        print(f"Lỗi: File save không hợp lệ hoặc thiếu mode id: {mode_to_load}")
+                    
+                    # Chờ một chút để tránh click đúp
+                    pygame.time.wait(150)
+                    pygame.event.clear()
+            # -----------------------------------------------------------
+            # 3. PLAY MODE
+            # -----------------------------------------------------------
             elif self.current_scene_name == "PLAY_MODE":
+                # Xóa sự kiện cũ trước khi vào scene mới để tránh click nhầm
+                pygame.event.clear()
                 
                 self.current_scene_obj = PlayMode(self.screen)
-                self.selected_mode = self.current_scene_obj.run() # Lấy tên mode
+                self.selected_mode = self.current_scene_obj.run()
 
-                if self.selected_mode in ["SOLO_LEVELING", "PLAY_TOGETHER", "BATTLE_ROYALE"]:
-                    self.current_scene_name = "SELECT_INFO" # Chuyển đến select info
-                elif self.selected_mode == "QUIT":
-                    self.current_scene_name = "INTRO" # Quay lại Intro
-                else:
-                    self.current_scene_name = "INTRO" # Quay lại nếu người chơi hủy
-            
-            # 3. PLAYER_SETUP: Scene Nhập Thông tin Người chơi (Phụ thuộc vào mode)
+                if self.selected_mode == "BACK":
+                    self.current_scene_name = "INTRO"
+                    # Thêm độ trễ nhỏ để ngắt thao tác click chuột của người chơi
+                    pygame.time.wait(150)
+                    pygame.event.clear()
+                    
+                # Chỉ chuyển sang SELECT_INFO nếu giá trị trả về đúng là tên các mode
+                elif self.selected_mode in ["SOLO_LEVELING", "PLAY_TOGETHER", "BATTLE_ROYALE"]:
+                    self.current_scene_name = "SELECT_INFO"
+                    pygame.time.wait(150) # Tránh click dính sang màn hình chọn tên
+                    pygame.event.clear()
+
+            # -----------------------------------------------------------
+            # 4. SELECT INFO
+            # -----------------------------------------------------------
             elif self.current_scene_name == "SELECT_INFO":
-                # Khởi tạo Setup Scene và truyền chế độ đã chọn vào
-                print(self.selected_mode)
                 self.current_scene_obj = SelectInfo(self.screen, self.selected_mode)
                 self.selected_mode, self.nickname_player1, self.nickname_player2, self.avatar_player1, self.avatar_player2, self.difficulty = self.current_scene_obj.run() # Lấy danh sách thông tin người chơi
                     # Chuyển đến Mode với thông tin người chơi đã nhập
@@ -76,22 +155,26 @@ class SnakeApp:
                     self.current_scene_name = "RULES"
                 elif self.selected_mode == "QUIT":
                      self.current_scene_name = "PLAY_MODE"
+                     pygame.time.wait(150) # Thêm độ trễ chống click dính
+                     pygame.event.clear()
                 else:
                     self.current_scene_name = "INTRO"
             # 4. RULES: Scene Hiển thị Luật Chơi
             elif self.current_scene_name == "RULES":
-                self.current_scene_obj = Rules(self.screen, self.selected_mode)
-                rules_action = self.current_scene_obj.run()
-                if rules_action == "QUIT":
-                    self.current_scene_name = "SELECT_INFO" # Quay lại màn hình nhập tên
+                self.rules = Rules(self.screen, self.selected_mode)
+                action = self.rules.run()
+                
+                if action == "BACK" or action == "QUIT":
+                    self.current_scene_name = "SELECT_INFO" 
                 else:
-                    # Bấm Next -> Vào game
                     if self.selected_mode == "SOLO_LEVELING":
                         self.current_scene_name = "SOLO_LEVELING"
                     elif self.selected_mode == "PLAY_TOGETHER":
                         self.current_scene_name = "PLAY_TOGETHER"
                     elif self.selected_mode == "BATTLE_ROYALE":
                         self.current_scene_name = "BATTLE_ROYALE"
+                    else:
+                        self.current_scene_name = "INTRO"
 
             # 5. Scene Chơi Game Chính
 
@@ -101,10 +184,12 @@ class SnakeApp:
                 self.current_scene_obj = SoloLeveling(self.screen, self.nickname_player1, self.avatar_player1, self.difficulty)
                 next_scene = self.current_scene_obj.run() 
                 self.current_scene_name = next_scene
+
             elif self.current_scene_name == "PLAY_TOGETHER":
                 self.current_scene_obj = PlayTogether(self.screen, self.avatar_player1, self.avatar_player2, self.nickname_player1, self.nickname_player2)
                 next_scene = self.current_scene_obj.run()
                 self.current_scene_name = next_scene
+
             elif self.current_scene_name == "BATTLE_ROYALE":
                 self.current_scene_obj = BattleRoyal(self.screen, self.avatar_player1, self.avatar_player2, self.nickname_player1, self.nickname_player2) 
                 next_scene = self.current_scene_obj.run()
@@ -120,10 +205,6 @@ class SnakeApp:
                 next_scene = self.current_scene_obj.run()
                 self.current_scene_name = next_scene
             
-            # Xử lý các trường hợp khác (ví dụ: ERROR)
-            else:
-                self.current_scene_name = "INTRO"
-
-
-        pygame.quit()
+            self.clock = pygame.time.Clock()
+            self.clock.tick(60)
         sys.exit()

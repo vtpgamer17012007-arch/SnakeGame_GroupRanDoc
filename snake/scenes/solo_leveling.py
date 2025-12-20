@@ -1,11 +1,8 @@
 import pygame
-import sys
+from snake.scenes.board import Board 
 from snake import settings as s
-from snake import save_manager
 from pathlib import Path
-from snake.core.env_snake import SnakeEnv
 
-ASSETS_PATH = Path(__file__).parent.parent / "assets"
 ONE_PLAYER_ASSETS_PATH = Path(__file__).parent.parent / "assets/1_player_asset"
 FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
 
@@ -35,28 +32,46 @@ class SoloLeveling:
         self.loaded_and_died_instantly = False
         self.first_frame = True 
 
-        self.current_speed = difficulty
+class SoloLeveling(Board):
+    def __init__(self, screen, nickname, difficulty):
+        super().__init__(screen, nickname, difficulty)
+        # --- QUAN TRỌNG: ĐẶT TÊN CHẾ ĐỘ ---
+        self.mode_id = "SOLO_LEVELING" 
+        # ----------------------------------
+        self._load_background()
 
-        self.input_queue = []
-        self.snake_sprites = {}
-        self._load_snake_sprites()
-        self._load_ui_assets()
-        
-       
-        
-
-        cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
-        self.play_again_rect = pygame.Rect(cx - 100, cy + 20, 200, 50)
-        self.menu_rect = pygame.Rect(cx - 100, cy + 90, 200, 50)
-        self.resume_rect = pygame.Rect(cx - 100, cy - 30, 200, 50)
-        self.save_quit_rect = pygame.Rect(cx - 100, cy + 40, 200, 50)
-        self.confirm_overwrite_rect = pygame.Rect(cx - 100, cy, 200, 50)
-        self.confirm_new_save_rect = pygame.Rect(cx - 100, cy + 70, 200, 50)
-        self.rename_input_rect = pygame.Rect(cx - 150, cy, 300, 50)
-        self.rename_save_button_rect = pygame.Rect(cx - 100, cy + 70, 200, 50)
-
-    def _load_snake_sprites(self):
+    def _load_background(self):
         try:
+       # --- HÀM TRẢ VỀ DỮ LIỆU ĐỂ LƯU ---
+    def get_game_state(self):
+        # Hàm này được Board gọi khi bấm Save
+        return {
+            "mode": self.mode_id,
+            "nickname": self.nickname,
+            "difficulty": self.current_speed,
+            "score": self.env.score,
+            "snake_pos": self.env.snake_pos,
+            "direction": self.env.direction,
+            "food_pos": self.env.food_pos,
+            "poops": self.env.poops
+        }
+
+    # --- HÀM NẠP DỮ LIỆU KHI LOAD ---
+    def restore_game_state(self, data):
+        if not data: return
+        # Khôi phục thông số
+        self.nickname = data.get("nickname", "Player")
+        self.current_speed = data.get("difficulty", s.BASE_SPEED)
+        self.env.score = data.get("score", 0)
+        
+        # Khôi phục vị trí
+        self.env.snake_pos = data.get("snake_pos", [(10,10), (10,11), (10,12)])
+        d = data.get("direction", (0, -1))
+        self.env.direction = (d[0], d[1])
+        
+        f = data.get("food_pos")
+        if f: self.env.food_pos = (f[0], f[1])
+        self.env.poops = data.get("poops", [])
             SPRITE_PATH = Path(__file__).parent.parent / "assets/snake_sprites"
             sz = (s.GRID_SIZE, s.GRID_SIZE)
             

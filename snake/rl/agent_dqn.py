@@ -11,7 +11,7 @@ class DQNAgent:
         self.epsilon = 0 # Tham số kiểm soát tính khám phá
         self.gamma = 0.9 # Hệ số chiết khấu (Discount factor)
         self.memory = ReplayMemory(100_000)
-        self.model = Linear_QNet(16, 256, 4)
+        self.model = Linear_QNet(11, 256, 4)
         self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
         self.criterion = nn.MSELoss() # Hàm tính sai số
 
@@ -19,11 +19,11 @@ class DQNAgent:
     def get_action(self, state, training=True): # Thêm tham số training
         # Chiến thuật Epsilon-Greedy: Răng càng chơi nhiều càng bớt đi lung tung
         if training:
-            self.epsilon = max(10, 700 - self.n_games)
+            self.epsilon = max(10, 500 - self.n_games)
         else:
-            self.epsilon = -1 # Khi xem kết quả, tắt hoàn toàn ngẫu nhiên
+            self.epsilon = 0 # Khi xem kết quả, tắt hoàn toàn ngẫu nhiên
         final_move = 0
-        if random.randint(0, 1000) < self.epsilon:
+        if random.randint(0, 300) < self.epsilon:
             final_move = random.randint(0, 3)
         else:
             state_tensor = torch.tensor(state, dtype=torch.float)

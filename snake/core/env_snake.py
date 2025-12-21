@@ -46,9 +46,7 @@ class SnakeEnv:
     def step(self, action_direction):
         if self.game_over:
             return self.get_state(), 0, True, {}
-        # Lấy khoảng cách cũ trước khi di chuyển
-        old_dist = abs(self.snake_pos[0][0] - self.food_pos[0]) + \
-               abs(self.snake_pos[0][1] - self.food_pos[1])
+
         self.direction = action_direction
         head_x, head_y = self.snake_pos[0]
         dir_x, dir_y = self.direction
@@ -59,7 +57,7 @@ class SnakeEnv:
             new_head[0] < s.START_COL or new_head[0] >= s.END_COL or
             new_head[1] < s.START_ROW or new_head[1] >= s.END_ROW):
             self.game_over = True
-            return self.get_state(), -150, True, {}
+            return self.get_state(), -10, True, {}
 
         # Lưu lại chiều dài HIỆN TẠI trước khi thêm đầu mới
         current_length = len(self.snake_pos)
@@ -69,7 +67,7 @@ class SnakeEnv:
         # 2. Logic ăn mồi (Giữ nguyên: không pop để dài ra)
         if new_head == self.food_pos:
             self.score += 1
-            reward = 20
+            reward = 10
             self._spawn_food()
 
         # 3. Logic dẫm phải "poop" (Thay đổi tại đây)
@@ -77,7 +75,7 @@ class SnakeEnv:
             if current_length == 1:
                 # TRƯỜNG HỢP 1: Chỉ có duy nhất cái đầu -> CHẾT
                 self.game_over = True
-                reward = -100
+                reward = -10
             else:
                 # TRƯỜNG HỢP 2: Có thân -> RÚT NGẮN THÂN
                 # Xóa poop đã ăn
@@ -94,19 +92,13 @@ class SnakeEnv:
                     self.snake_pos.pop()
                 
                 self.score = max(0, self.score - 1)
-                reward = -10 # Phạt vừa phải để AI biết đường né
+                reward = -5 # Phạt vừa phải để AI biết đường né
                 self._spawn_poop()
-        
+
         # 4. Di chuyển bình thường
         else:
-            self.snake_pos.pop()
-            new_dist = abs(new_head[0] - self.food_pos[0]) + \
-                   abs(new_head[1] - self.food_pos[1])
-        
-            if new_dist < old_dist:
-                reward = 0.3  # Thưởng vì tiến lại gần mồi (giúp đi thẳng)
-            else:
-                reward = -0.3 # Phạt vì đi xa mồi hoặc đi zizac thừa
+            self.snake_pos.pop() # Xóa đuôi để duy trì chiều dài
+            reward = -0.1
 
         return self.get_state(), reward, self.game_over, {}
     
@@ -132,46 +124,48 @@ class SnakeEnv:
     def get_state_rl(self):
         head = self.snake_pos[0]
         
-        # Hàm phụ để quét theo một hướng bất kỳ cho đến khi chạm vật cản
-        def ray_cast(direction):
-            dist = 0
-            # Tính toán ô tiếp theo dựa trên hướng quét
-            current = (head[0] + direction[0], head[1] + direction[1])
+        # Tạo các điểm giả định xung quanh đầu để kiểm tra va chạm
+        point_l = (head[0] - 1, head[1])
+        point_r = (head[0] + 1, head[1])
+        point_u = (head[0], head[1] - 1)
+        point_d = (head[0], head[1] + 1)
+        
+        # Kiểm tra hướng hiện tại
+        dir_l = self.direction == (-1, 0)
+        dir_r = self.direction == (1, 0)
+        dir_u = self.direction == (0, -1)
+        dir_d = self.direction == (0, 1)
+
+        state = [
+            # 1. Nguy hiểm phía trước
+            (dir_r and self.is_collision(point_r)) or 
+            (dir_l and self.is_collision(point_l)) or 
+            (dir_u and self.is_collision(point_u)) or 
+            (dir_d and self.is_collision(point_d)),
+
+            # 2. Nguy hiểm bên phải (theo hướng đi)
+            (dir_u and self.is_collision(point_r)) or 
+            (dir_d and self.is_collision(point_l)) or 
+            (dir_l and self.is_collision(point_u)) or 
+            (dir_r and self.is_collision(point_d)),
+
+            # 3. Nguy hiểm bên trái (theo hướng đi)
+            (dir_d and self.is_collision(point_r)) or 
+            (dir_u and self.is_collision(point_l)) or 
+            (dir_r and self.is_collision(point_u)) or 
+            (dir_l and self.is_collision(point_d)),
             
-            # Tiếp tục quét nếu ô hiện tại nằm trong bảng và không đâm vào thân mình
-            while (s.START_COL <= current[0] < s.END_COL and 
-                   s.START_ROW <= current[1] < s.END_ROW and 
-                   current not in self.snake_pos):
-                dist += 1
-                current = (current[0] + direction[0], current[1] + direction[1])
-            
-            # Trả về giá trị chuẩn hóa: 1/(khoảng cách + 1)
-            # Giá trị gần 1 nghĩa là vật cản rất gần, gần 0 là vật cản rất xa
-            return 1.0 / (dist + 1)
-    
-        # 1. Tầm nhìn 8 hướng (8 chiều)
-        # Bao gồm: Lên, Xuống, Trái, Phải và 4 hướng chéo
-        look_dirs = [(0,-1), (0,1), (-1,0), (1,0), (-1,-1), (1,-1), (-1,1), (1,1)]
-        vision = [ray_cast(d) for d in look_dirs]
-    
-        # 2. Vị trí mồi tương đối (4 chiều - Giữ nguyên logic cũ)
-        food_dir = [
-            self.food_pos[0] < head[0], # Thức ăn bên trái
-            self.food_pos[0] > head[0], # Thức ăn bên phải
-            self.food_pos[1] < head[1], # Thức ăn phía trên
-            self.food_pos[1] > head[1]  # Thức ăn phía dưới
+            # 4. Hướng di chuyển
+            dir_l, dir_r, dir_u, dir_d,
+
+            # 5. Vị trí mồi
+            self.food_pos[0] < head[0], # Food left
+            self.food_pos[0] > head[0], # Food right
+            self.food_pos[1] < head[1], # Food up
+            self.food_pos[1] > head[1]  # Food down
         ]
-    
-        # 3. Hướng di chuyển hiện tại (4 chiều - Giữ nguyên logic cũ)
-        cur_dir = [
-            self.direction == (-1, 0), # Đang đi trái
-            self.direction == (1, 0),  # Đang đi phải
-            self.direction == (0, -1), # Đang đi lên
-            self.direction == (0, 1)   # Đang đi xuống
-        ]
-    
-        # Tổng cộng: 8 (Tầm nhìn) + 4 (Mồi) + 4 (Hướng) = 16 chiều
-        return np.array(vision + food_dir + cur_dir, dtype=float)
+
+        return np.array(state, dtype=int)
 
     def get_state(self):
         return {

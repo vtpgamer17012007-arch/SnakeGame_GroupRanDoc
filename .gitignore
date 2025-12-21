@@ -2,8 +2,6 @@
 myenv/
 venv/
 
-# Bỏ qua file save DATA cá nhân (Dữ liệu JSON)
-save_games.json
 
 
 # Giữ các cài đặt riêng tư của bạn trên máy

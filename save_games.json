@@ -1,0 +1,129 @@
+{
+    "d - Score 0": {
+        "snake_pos": [
+            [
+                13,
+                10
+            ]
+        ],
+        "direction": [
+            -1,
+            0
+        ],
+        "food_pos": [
+            6,
+            24
+        ],
+        "poops": [
+            {
+                "pos": [
+                    29,
+                    21
+                ],
+                "age": 0
+            }
+        ],
+        "score": 0,
+        "speed": 5,
+        "nickname": "d"
+    },
+    "fe - Score 2": {
+        "snake_pos": [
+            [
+                27,
+                6
+            ],
+            [
+                26,
+                6
+            ],
+            [
+                25,
+                6
+            ]
+        ],
+        "direction": [
+            1,
+            0
+        ],
+        "food_pos": [
+            7,
+            14
+        ],
+        "poops": [
+            {
+                "pos": [
+                    12,
+                    6
+                ],
+                "age": 1
+            },
+            {
+                "pos": [
+                    6,
+                    17
+                ],
+                "age": 0
+            }
+        ],
+        "score": 2,
+        "speed": 5,
+        "nickname": "fe"
+    },
+    "ffdfsdfd - Score 0": {
+        "snake_pos": [
+            [
+                22,
+                6
+            ]
+        ],
+        "direction": [
+            1,
+            0
+        ],
+        "food_pos": [
+            25,
+            12
+        ],
+        "poops": [
+            {
+                "pos": [
+                    5,
+                    15
+                ],
+                "age": 0
+            }
+        ],
+        "score": 0,
+        "speed": 8,
+        "nickname": "ffdfsdfd"
+    },
+    "g - Score 0": {
+        "snake_pos": [
+            [
+                25,
+                6
+            ]
+        ],
+        "direction": [
+            1,
+            0
+        ],
+        "food_pos": [
+            6,
+            3
+        ],
+        "poops": [
+            {
+                "pos": [
+                    27,
+                    7
+                ],
+                "age": 0
+            }
+        ],
+        "score": 0,
+        "speed": 8,
+        "nickname": "g"
+    }
+}

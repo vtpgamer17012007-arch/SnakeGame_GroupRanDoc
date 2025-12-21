@@ -1,7 +1,7 @@
 import pygame
 import sys
 from snake import settings as s
-import snake.core.save_manager as save_manager
+from snake import save_manager
 from pathlib import Path
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
@@ -110,8 +110,10 @@ class Intro:
                     if self.ai_button_rect.collidepoint(event.pos):
                             self.selected_mode = "AI"; self.running = False
                     if self.continue_button_rect.collidepoint(event.pos):
-                        self.selected_mode = "CONTINUE"  # Trả về tín hiệu "CONTINUE"
-                        self.running = False
+                        self.showing_load_menu = True
+                        self.save_list = save_manager.get_save_list()
+                        self.current_page = 0
+                        self._build_current_page()
                     if self.credit_button_rect.collidepoint(event.pos):
                             self.selected_mode = "CREDIT"; self.running = False
             else:

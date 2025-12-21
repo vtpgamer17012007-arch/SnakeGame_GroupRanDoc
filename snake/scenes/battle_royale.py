@@ -28,7 +28,7 @@ class Battle(Board):
         self._load_snake_sprites() # Dùng lại hàm của cha
 >>>>>>> 5ab695014f243f90f7771971c04f86ee3b26d7c5
         self._load_ui_assets()     # Dùng lại hàm của cha
-        
+            
         # Queue input cho 2 người chơi
         self.input_q1 = []
         self.input_q2 = []

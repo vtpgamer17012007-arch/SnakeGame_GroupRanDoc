@@ -29,7 +29,7 @@ class BattleRoyal(Board):
         self._load_snake_sprites(self.snake_sprites_p1, "snake_sprites")
         self._load_snake_sprites(self.snake_sprites_p2, "snake_sprites2")
         self._load_ui_assets()     # Dùng lại hàm của cha
-        
+            
         # Queue input cho 2 người chơi
         self.input_q1 = []
         self.input_q2 = []

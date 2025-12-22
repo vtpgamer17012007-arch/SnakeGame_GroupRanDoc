@@ -1,5 +1,6 @@
 import random
 import pygame
+import numpy as np
 from snake import settings as s
 
 class SnakeEnv:
@@ -25,7 +26,7 @@ class SnakeEnv:
             self.food_pos = (
                 random.randint(s.START_COL, s.END_COL - 1),
                 random.randint(s.START_ROW, s.END_ROW - 1)
-            )
+            )   
             if self.food_pos not in self.snake_pos:
                 break
     
@@ -45,43 +46,132 @@ class SnakeEnv:
     def step(self, action_direction):
         if self.game_over:
             return self.get_state(), 0, True, {}
-
+        # Lấy khoảng cách cũ trước khi di chuyển
+        old_dist = abs(self.snake_pos[0][0] - self.food_pos[0]) + \
+               abs(self.snake_pos[0][1] - self.food_pos[1])
         self.direction = action_direction
         head_x, head_y = self.snake_pos[0]
         dir_x, dir_y = self.direction
         new_head = (head_x + dir_x, head_y + dir_y)
 
+        # 1. Kiểm tra va chạm tường/thân (Giữ nguyên)
         if (new_head in self.snake_pos or
             new_head[0] < s.START_COL or new_head[0] >= s.END_COL or
             new_head[1] < s.START_ROW or new_head[1] >= s.END_ROW):
             self.game_over = True
-            return self.get_state(), -10, True, {}
+            return self.get_state(), -150, True, {}
 
-        self.snake_pos.insert(0, new_head)
+        # Lưu lại chiều dài HIỆN TẠI trước khi thêm đầu mới
+        current_length = len(self.snake_pos)
+        self.snake_pos.insert(0, new_head) # Thêm đầu mới vào
         reward = 0
 
+        # 2. Logic ăn mồi (Giữ nguyên: không pop để dài ra)
         if new_head == self.food_pos:
             self.score += 1
-            reward = 10
+            reward = 20
             self._spawn_food()
-            for p in self.poops:
-                p['age'] += 1
-            self.poops = [p for p in self.poops if p['age'] < 5]
-            self._spawn_poop()
 
+        # 3. Logic dẫm phải "poop" (Thay đổi tại đây)
         elif any(p['pos'] == new_head for p in self.poops):
-            self.poops = [p for p in self.poops if p['pos'] != new_head]
-            self.snake_pos.pop() 
-            if len(self.snake_pos) > 1:
-                self.snake_pos.pop()
-            self.score = max(0, self.score - 2)
-            reward = -5
-            
+            if current_length == 1:
+                # TRƯỜNG HỢP 1: Chỉ có duy nhất cái đầu -> CHẾT
+                self.game_over = True
+                reward = -100
+            else:
+                # TRƯỜNG HỢP 2: Có thân -> RÚT NGẮN THÂN
+                # Xóa poop đã ăn
+                for i, p in enumerate(self.poops):
+                    if p['pos'] == new_head:
+                        self.poops.pop(i)
+                        break
+                
+                # Logic rút ngắn: 
+                # pop lần 1: để bù lại phần đầu vừa thêm (giữ nguyên chiều dài)
+                # pop lần 2: để thực sự làm con rắn ngắn đi 1 đốt
+                self.snake_pos.pop() 
+                if len(self.snake_pos) > 1: # Đảm bảo không pop mất cái đầu duy nhất
+                    self.snake_pos.pop()
+                
+                self.score = max(0, self.score - 1)
+                reward = -10 # Phạt vừa phải để AI biết đường né
+                self._spawn_poop()
+        
+        # 4. Di chuyển bình thường
         else:
             self.snake_pos.pop()
-            reward = -0.1
+            new_dist = abs(new_head[0] - self.food_pos[0]) + \
+                   abs(new_head[1] - self.food_pos[1])
+        
+            if new_dist < old_dist:
+                reward = 0.3  # Thưởng vì tiến lại gần mồi (giúp đi thẳng)
+            else:
+                reward = -0.3 # Phạt vì đi xa mồi hoặc đi zizac thừa
 
         return self.get_state(), reward, self.game_over, {}
+    
+
+    
+    def is_collision(self, pt=None):
+        if pt is None:
+            pt = self.snake_pos[0]
+        # Kiểm tra đâm tường dựa trên cấu hình settings.py
+        if pt[0] < s.START_COL or pt[0] >= s.END_COL or \
+        pt[1] < s.START_ROW or pt[1] >= s.END_ROW:
+            return True
+        # Kiểm tra đâm vào thân rắn
+        if pt in self.snake_pos[1:]:
+            return True
+        # MỚI: Kiểm tra va chạm với poop
+        if any(p['pos'] == pt for p in self.poops):
+            return True
+        return False
+
+ 
+
+    def get_state_rl(self):
+        head = self.snake_pos[0]
+        
+        # Hàm phụ để quét theo một hướng bất kỳ cho đến khi chạm vật cản
+        def ray_cast(direction):
+            dist = 0
+            # Tính toán ô tiếp theo dựa trên hướng quét
+            current = (head[0] + direction[0], head[1] + direction[1])
+            
+            # Tiếp tục quét nếu ô hiện tại nằm trong bảng và không đâm vào thân mình
+            while (s.START_COL <= current[0] < s.END_COL and 
+                   s.START_ROW <= current[1] < s.END_ROW and 
+                   current not in self.snake_pos):
+                dist += 1
+                current = (current[0] + direction[0], current[1] + direction[1])
+            
+            # Trả về giá trị chuẩn hóa: 1/(khoảng cách + 1)
+            # Giá trị gần 1 nghĩa là vật cản rất gần, gần 0 là vật cản rất xa
+            return 1.0 / (dist + 1)
+    
+        # 1. Tầm nhìn 8 hướng (8 chiều)
+        # Bao gồm: Lên, Xuống, Trái, Phải và 4 hướng chéo
+        look_dirs = [(0,-1), (0,1), (-1,0), (1,0), (-1,-1), (1,-1), (-1,1), (1,1)]
+        vision = [ray_cast(d) for d in look_dirs]
+    
+        # 2. Vị trí mồi tương đối (4 chiều - Giữ nguyên logic cũ)
+        food_dir = [
+            self.food_pos[0] < head[0], # Thức ăn bên trái
+            self.food_pos[0] > head[0], # Thức ăn bên phải
+            self.food_pos[1] < head[1], # Thức ăn phía trên
+            self.food_pos[1] > head[1]  # Thức ăn phía dưới
+        ]
+    
+        # 3. Hướng di chuyển hiện tại (4 chiều - Giữ nguyên logic cũ)
+        cur_dir = [
+            self.direction == (-1, 0), # Đang đi trái
+            self.direction == (1, 0),  # Đang đi phải
+            self.direction == (0, -1), # Đang đi lên
+            self.direction == (0, 1)   # Đang đi xuống
+        ]
+    
+        # Tổng cộng: 8 (Tầm nhìn) + 4 (Mồi) + 4 (Hướng) = 16 chiều
+        return np.array(vision + food_dir + cur_dir, dtype=float)
 
     def get_state(self):
         return {

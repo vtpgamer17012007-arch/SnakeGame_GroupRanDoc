@@ -26,10 +26,7 @@ class PlayMode:
         self._define_layout()
         self._load_assets()
 
-
-    def _load_assets(self):
-
-        
+    def _load_assets(self):    
         self.img_mode_background = pygame.image.load(ASSETS_PATH / "play_mode_background.png")
         self.img_solo_leveling_button = pygame.image.load(ASSETS_PATH / "solo_leveling_button.png")
         self.img_play_together_button = pygame.image.load(ASSETS_PATH / "play_together_button.png")
@@ -77,8 +74,7 @@ class PlayMode:
 
         self.screen.blit(self.img_back_button, self.back_button_rect)
         if self.back_button_rect.collidepoint(pygame.mouse.get_pos()):
-            self.screen.blit(self.img_back_hover_button, self.back_button_rect)
-        
+            self.screen.blit(self.img_back_hover_button, self.back_button_rect)  
 
     def run(self):
         while self.running:

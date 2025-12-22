@@ -6,6 +6,7 @@ from snake import settings as s
 from snake.core.env_snake import SnakeEnv
 from snake.core.snake_render import SnakeRenderer # Cần Renderer để vẽ
 from snake.rl.agent_dqn import DQNAgent
+from snake.core.sound_manager import SoundManager
 
 FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
@@ -20,6 +21,9 @@ class AIMode:
         self.env = SnakeEnv()
         self.agent = DQNAgent() 
         self.renderer = SnakeRenderer(screen) # Khởi tạo renderer
+
+        self.sound_manager = SoundManager()
+        self.sound_manager.play_music("game")
 
         # 1. Sửa đường dẫn nạp model chính xác
         # model_ep1000.pth hoặc best_model.pth tùy bạn đặt tên
@@ -59,20 +63,33 @@ class AIMode:
 
 
     def _update_game(self):
-        self._handle_ai_input() # Gọi hàm xử lý AI
+        self._handle_ai_input() 
         
+        # 1. Lưu điểm cũ
+        old_score = self.env.score
+
         state, reward, done, info = self.env.step(self.env.direction)
+        
+        # 2. So sánh điểm mới > điểm cũ => Ăn mồi
+        if self.env.score > old_score: 
+            self.sound_manager.play_sfx("eat")
+        
+        # (Tùy chọn) Thêm âm thanh Poop nếu AI ăn phải độc (điểm giảm)
+        elif self.env.score < old_score and not done:
+            self.sound_manager.play_sfx("poop")
 
         if done:
-            pygame.time.delay(500) # Đợi một chút rồi chơi lại
+            self.sound_manager.play_sfx("die")
+            pygame.time.delay(500) 
             self.env.reset()
-
     def run(self):
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: self.running = False
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE: self.running = False
+                    if event.key == pygame.K_ESCAPE: 
+                        self.sound_manager.play_sfx("click")
+                        self.running = False
 
             self._update_game()
             

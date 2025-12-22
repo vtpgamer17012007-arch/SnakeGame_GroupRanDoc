@@ -4,6 +4,7 @@ from snake import settings as s
 from snake import save_manager
 from pathlib import Path
 from snake.core.env_snake import SnakeEnv
+from snake.core.sound_manager import SoundManager
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 FONT_PATH = Path(__file__).parent.parent / "assets/fonts"
@@ -35,6 +36,9 @@ class Board:
         self.env = SnakeEnv()
         self.input_queue = []
         self.snake_sprites = {}
+
+        self.sound_manager = SoundManager() 
+        self.sound_manager.play_music("game")
         
         # Load Resources
         self._load_ui_assets()
@@ -109,6 +113,7 @@ class Board:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    self.sound_manager.play_sfx("click")
                     self.is_paused = not self.is_paused
                 
                 target_dir = None
@@ -118,6 +123,7 @@ class Board:
                 elif event.key == pygame.K_RIGHT or event.key == pygame.K_d: target_dir = (1, 0)
                 
                 if target_dir:
+                    self.sound_manager.play_sfx("input")
                     if self.input_queue: last_dir = self.input_queue[-1]
                     else: last_dir = self.env.direction
                     
@@ -128,13 +134,26 @@ class Board:
                         self.input_queue.append(target_dir)
 
     def _update_game(self):
-        # Mặc định cho 1 người (các class con sẽ override)
+        
         if not self.running: return 
+
         if self.input_queue:
             next_move = self.input_queue.pop(0)
             self.env.direction = next_move
+
         state, reward, done, info = self.env.step(self.env.direction)
-        if done: self.is_game_over = True
+        if reward == 10: 
+            self.sound_manager.play_sfx("eat")
+        elif reward == -5:
+            self.sound_manager.play_sfx("poop")
+
+        if done:
+            self.is_game_over = True
+            self.sound_manager.play_sfx("die") 
+            self.sound_manager.stop_music()
+            if self.was_loaded_game and self.first_frame and self.save_name_if_loaded:
+                save_manager.delete_save(self.save_name_if_loaded)
+                self.loaded_and_died_instantly = True
 
     # --- PAUSE & SAVE LOGIC (INHERITED) ---
     def get_game_state(self):
@@ -148,6 +167,7 @@ class Board:
             # --- TRƯỜNG HỢP 1: ĐANG NHẬP TÊN SAVE ---
             if self.show_save_dialog:
                 if event.type == pygame.KEYDOWN:
+                    self.sound_manager.play_sfx("input")
                     if event.key == pygame.K_ESCAPE:
                         self.show_save_dialog = False # Hủy, quay lại menu pause
                         self.save_input_text = ""
@@ -174,6 +194,7 @@ class Board:
                     self.is_paused = False # Tắt pause
                 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    self.sound_manager.play_sfx("click")
                     if self.resume_rect.collidepoint(event.pos): 
                         self.is_paused = False
                     
@@ -182,6 +203,7 @@ class Board:
                     
                     elif self.save_quit_rect.collidepoint(event.pos):
                         # BẤM NÚT SAVE -> BẬT HỘP THOẠI
+                        
                         self.game_state_to_save = self.get_game_state()
                         self.show_save_dialog = True
                         self.save_input_text = "" # Reset chữ mỗi lần mở
@@ -192,10 +214,18 @@ class Board:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 # Class con cần reset đúng env của nó, nên env phải được reset trong hàm reset() của env
                 if self.play_again_rect.collidepoint(event.pos):
+                    self.sound_manager.play_sfx("click")
+                    self.sound_manager.play_music("game")   
+                    self.sound_manager.stop_sfx("die")
+                    self.sound_manager.stop_sfx("win")
                     self.env.reset()
                     self.is_game_over = False
                     self.input_queue = [] # Reset queue
-                if self.menu_rect.collidepoint(event.pos): self.running = False
+                if self.menu_rect.collidepoint(event.pos):
+                    self.sound_manager.play_sfx("click")
+                    self.sound_manager.stop_sfx("die")
+                    self.sound_manager.stop_sfx("win")
+                    self.running = False
 
     # --- DRAWING (SHARED) ---
     def _draw_overlay(self):

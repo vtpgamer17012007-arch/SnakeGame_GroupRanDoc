@@ -5,6 +5,8 @@ from snake import save_manager
 from pathlib import Path
 from snake.core.env_snake import SnakeEnv
 from snake.scenes.board import Board
+from snake.core.sound_manager import SoundManager
+from snake.scenes.setting import SettingPopup
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 ONE_PLAYER_ASSETS_PATH = Path(__file__).parent.parent / "assets/1_player_asset"
@@ -16,7 +18,10 @@ class SoloLeveling(Board):
         self.save_name_if_loaded = save_name
         
         super().__init__(screen, nickname, difficulty)
-        
+
+        self.sound_manager = SoundManager() 
+        self.sound_manager.play_music("game")
+  
         # Load assets riêng cho Solo
         self._load_solo_assets()
         self._load_snake_sprites()
@@ -34,6 +39,31 @@ class SoloLeveling(Board):
             print("Lỗi load ảnh nền/avatar Solo")
             sys.exit()
 
+    def _update_game(self):
+        if not self.running: return 
+
+        if self.input_queue:
+            next_move = self.input_queue.pop(0)
+            self.env.direction = next_move
+
+
+        old_score = self.env.score
+
+        state, reward, done, info = self.env.step(self.env.direction)
+
+
+        if self.env.score > old_score:
+            self.sound_manager.play_sfx("eat")
+        elif self.env.score < old_score: 
+            self.sound_manager.play_sfx("poop")
+
+        if done:
+            self.is_game_over = True
+            self.sound_manager.play_sfx("die") 
+            self.sound_manager.stop_music()
+            if self.save_name_if_loaded:
+                save_manager.delete_save(self.save_name_if_loaded)
+                
     def _draw_elements(self):
         self.screen.blit(self.img_solo_leveling_board, (0, 0))
         self.screen.blit(self.img_avartar, (55, 31))

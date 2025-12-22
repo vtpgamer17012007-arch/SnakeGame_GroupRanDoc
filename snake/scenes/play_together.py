@@ -4,6 +4,7 @@ from snake import settings as s
 from snake.core.env_2p import SnakeEnv2P
 from snake.scenes.board import Board 
 from pathlib import Path
+from snake.core.sound_manager import SoundManager
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
@@ -28,7 +29,9 @@ class PlayTogether(Board):
         self._load_snake_sprites()
         
         self._load_background()
-        
+
+        self.sound_manager = SoundManager() 
+        self.sound_manager.play_music("game") 
     def _load_snake_sprites(self):
         self._load_one_set(self.snake_sprites_p1, "snake_sprites")
         self._load_one_set(self.snake_sprites_p2, "snake_sprites2")
@@ -71,7 +74,10 @@ class PlayTogether(Board):
         for event in pygame.event.get():
             if event.type == pygame.QUIT: self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE: self.is_paused = not self.is_paused
+                if event.key == pygame.K_ESCAPE: 
+                    self.is_paused = not self.is_paused
+                    self.sound_manager.play_sfx("click")
+                played_sound = False
                 
                 # P1 Controls
                 d1 = None
@@ -79,7 +85,11 @@ class PlayTogether(Board):
                 elif event.key == s.P1_CONTROLS["DOWN"]: d1 = (0, 1)
                 elif event.key == s.P1_CONTROLS["LEFT"]: d1 = (-1, 0)
                 elif event.key == s.P1_CONTROLS["RIGHT"]: d1 = (1, 0)
-                if d1: self.input_q1.append(d1)
+                if d1: 
+                    self.input_q1.append(d1)
+                    if not played_sound:
+                        self.sound_manager.play_sfx("input")
+                        played_sound = True
 
                 # P2 Controls
                 d2 = None
@@ -87,7 +97,11 @@ class PlayTogether(Board):
                 elif event.key == s.P2_CONTROLS["DOWN"]: d2 = (0, 1)
                 elif event.key == s.P2_CONTROLS["LEFT"]: d2 = (-1, 0)
                 elif event.key == s.P2_CONTROLS["RIGHT"]: d2 = (1, 0)
-                if d2: self.input_q2.append(d2)
+                if d2: 
+                    self.input_q2.append(d2)
+                    if not played_sound:
+                        self.sound_manager.play_sfx("input")
+                        played_sound = True
 
     def _get_next_move(self, queue, current_dir):
         if not queue: return current_dir
@@ -95,16 +109,30 @@ class PlayTogether(Board):
         if (next_dir[0] + current_dir[0] == 0) and (next_dir[1] + current_dir[1] == 0): return current_dir
         return next_dir
 
+    
     def _update_game(self):
-        if self.env.game_over: 
-            self.is_game_over = True
-            return
-        
+        if self.env.game_over: return
+
+        # Lấy move tiếp theo cho P1 và P2
+        # Lưu điểm cũ để so sánh
+        old_p1 = self.env.p1_score
+        old_p2 = self.env.p2_score
+
         d1 = self._get_next_move(self.input_q1, self.env.p1_dir)
         d2 = self._get_next_move(self.input_q2, self.env.p2_dir)
+        
         self.env.step(d1, d2)
-        if self.env.game_over: self.is_game_over = True
 
+        #  Logic âm thanh
+        if self.env.p1_score > old_p1 or self.env.p2_score > old_p2:
+            self.sound_manager.play_sfx("eat")
+        elif self.env.p1_score < old_p1 or self.env.p2_score < old_p2:
+            self.sound_manager.play_sfx("poop")
+
+        if self.env.game_over:
+            self.is_game_over = True
+            self.sound_manager.stop_music()
+            self.sound_manager.play_sfx("die")
     def _draw_one_snake(self, snake_pos, direction, sprites):
         for index, pos in enumerate(snake_pos):
             rect = pygame.Rect(pos[0] * s.GRID_SIZE, pos[1] * s.GRID_SIZE, s.GRID_SIZE, s.GRID_SIZE)

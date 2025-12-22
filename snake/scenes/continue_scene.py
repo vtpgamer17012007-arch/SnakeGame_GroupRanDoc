@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 from snake import settings as s
 from snake import save_manager
+from snake.core.sound_manager import SoundManager
+from snake.scenes.setting import SettingPopup
 
 class ContinueScene:
     def __init__(self, screen):
@@ -10,6 +12,13 @@ class ContinueScene:
         self.clock = pygame.time.Clock()
         self.running = True
         
+        self.sound_manager = SoundManager()
+        self.sound_manager.play_music("menu") 
+        self.show_setting = False
+        self.setting_popup = SettingPopup(self.screen)
+        
+        # Load nút setting
+        self._load_setting_assets()
         # --- CẤU HÌNH DEBUG ---
         self.debug_mode = False
         
@@ -42,6 +51,20 @@ class ContinueScene:
         self.filtered_saves = [] 
         self._refresh_save_data()
 
+    def _load_setting_assets(self):
+        btn_w, btn_h = 120, 80
+        self.setting_button_rect = pygame.Rect(s.SCREEN_WIDTH - 120 - 8, 10, btn_w, btn_h)
+        try:
+            raw_gear = pygame.image.load(ASSETS_PATH / "setting_button.png").convert_alpha()
+            self.img_gear_normal = pygame.transform.smoothscale(raw_gear, (btn_w, btn_h))
+            try:
+                raw_hover = pygame.image.load(ASSETS_PATH / "setting_button_hover.png").convert_alpha()
+                self.img_gear_hover = pygame.transform.smoothscale(raw_hover, (btn_w, btn_h))
+            except FileNotFoundError:
+                self.img_gear_hover = self.img_gear_normal
+        except:
+            self.img_gear_normal = pygame.Surface((btn_w, btn_h))
+            self.img_gear_hover = self.img_gear_normal
     def _setup_layout(self):
         # 1. Nút Back
         self.back_rect = pygame.Rect(15, 15, 80, 60)
@@ -182,6 +205,14 @@ class ContinueScene:
                 self.screen.blit(name_txt, (rect.x + 40, rect.y + 12))
                 score_txt = self.font_score.render(f"Score: {slot_data['data'].get('score', 0)}", True, (0, 0, 0))
                 self.screen.blit(score_txt, (rect.x + 40, rect.y + 36))
+                mouse_pos = pygame.mouse.get_pos()
+        if self.setting_button_rect.collidepoint(mouse_pos):
+            self.screen.blit(self.img_gear_hover, self.setting_button_rect)
+        else:
+            self.screen.blit(self.img_gear_normal, self.setting_button_rect)
+
+        if self.show_setting:
+            self.setting_popup.draw()
 
         self._draw_debug_rects()
 
@@ -191,13 +222,19 @@ class ContinueScene:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit(); sys.exit()
+                if self.show_setting:
+                    if not self.setting_popup.handle_input(event):
+                        self.show_setting = False
+                    continue
                 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if self.back_rect.collidepoint(pos): 
+                        self.sound_manager.play_sfx("click")
                         return "BACK", None
                     
                     for tab in self.tabs:
                         if tab["rect"].collidepoint(pos):
+                            self.sound_manager.play_sfx("click")
                             if self.selected_mode != tab["mode"]: 
                                 self.selected_mode = tab["mode"]
                                 self._refresh_save_data()

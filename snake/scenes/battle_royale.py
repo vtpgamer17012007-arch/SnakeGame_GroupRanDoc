@@ -4,6 +4,7 @@ from snake import settings as s
 from snake.core.env_2pvp import SnakeEnv2Pvp
 from snake.scenes.board import Board 
 from pathlib import Path
+from snake.core.sound_manager import SoundManager
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
@@ -23,6 +24,9 @@ class BattleRoyal(Board):
         
         self.snake_sprites_p1 = {}
         self.snake_sprites_p2 = {}
+
+        self.sound_manager = SoundManager() 
+        self.sound_manager.play_music("battle")
         self._load_snake_sprites()
         
         self._load_background()
@@ -69,20 +73,35 @@ class BattleRoyal(Board):
         for event in pygame.event.get():
             if event.type == pygame.QUIT: self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE: self.is_paused = not self.is_paused
-                # Input logic 2 người (tương tự PlayTogether)
+                if event.key == pygame.K_ESCAPE: 
+                    self.is_paused = not self.is_paused
+                    self.sound_manager.play_sfx("click")
+                played_sound = False
+                
+                # P1 Controls
                 d1 = None
                 if event.key == s.P1_CONTROLS["UP"]: d1 = (0, -1)
                 elif event.key == s.P1_CONTROLS["DOWN"]: d1 = (0, 1)
                 elif event.key == s.P1_CONTROLS["LEFT"]: d1 = (-1, 0)
                 elif event.key == s.P1_CONTROLS["RIGHT"]: d1 = (1, 0)
-                if d1: self.input_q1.append(d1)
+                if d1: 
+                    self.input_q1.append(d1)
+                    if not played_sound:
+                        self.sound_manager.play_sfx("input")
+                        played_sound = True
+
+                # P2 Controls
                 d2 = None
                 if event.key == s.P2_CONTROLS["UP"]: d2 = (0, -1)
                 elif event.key == s.P2_CONTROLS["DOWN"]: d2 = (0, 1)
                 elif event.key == s.P2_CONTROLS["LEFT"]: d2 = (-1, 0)
                 elif event.key == s.P2_CONTROLS["RIGHT"]: d2 = (1, 0)
-                if d2: self.input_q2.append(d2)
+                if d2: 
+                    self.input_q2.append(d2)
+                    if not played_sound:
+                        self.sound_manager.play_sfx("input")
+                        played_sound = True
+
 
     def _get_next_move(self, queue, current_dir):
         if not queue: return current_dir
@@ -91,13 +110,32 @@ class BattleRoyal(Board):
         return next_dir
 
     def _update_game(self):
-        if self.env.game_over: 
-            self.is_game_over = True
-            return
+        if self.env.game_over: return
+        old_p1 = self.env.p1_score
+        old_p2 = self.env.p2_score
+
+        # Lấy move tiếp theo cho P1 và P2
         d1 = self._get_next_move(self.input_q1, self.env.p1_dir)
         d2 = self._get_next_move(self.input_q2, self.env.p2_dir)
-        self.env.step(d1, d2)
-        if self.env.game_over: self.is_game_over = True
+        
+        state = self.env.step(d1, d2)
+
+        
+        # Kiểm tra nếu có ai đó tăng điểm (Ăn đúng)
+        if state['p1_score'] > old_p1 or state['p2_score'] > old_p2:
+            self.sound_manager.play_sfx("eat")
+        
+        # Kiểm tra nếu có ai đó bị trừ điểm (Ăn sai)
+        elif state['p1_score'] < old_p1 or state['p2_score'] < old_p2:
+            self.sound_manager.play_sfx("poop")
+
+        if state['game_over']:
+            self.is_game_over = True
+            if state['winner'] == "Draw" or "LOSE" in str(state['winner']):
+                self.sound_manager.play_sfx("die")
+            else:
+                self.sound_manager.play_sfx("win")
+            self.sound_manager.stop_music()
 
     def _draw_one_snake(self, snake_pos, direction, sprites):
         for index, pos in enumerate(snake_pos):

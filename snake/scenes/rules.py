@@ -26,10 +26,7 @@ class Rules:
         self._define_layout()
         self._load_assets()
 
-
     def _load_assets(self):
-        #self.img_panel = pygame.image.load(ASSETS_PATH / "grey_panel.png").convert_alpha()
-
         self.img_back_button = pygame.image.load(ASSETS_PATH/ "back_button.png").convert_alpha()
         self.img_back_hover_button = pygame.image.load(ASSETS_PATH/ "back_hover_button.png").convert_alpha()
        
@@ -42,9 +39,7 @@ class Rules:
 
     def _define_layout(self):
         self.back_button_rect = pygame.Rect(15, 15, 80, 60)
-
         self.next_button_rect = pygame.Rect(430, 600, 275, 70)
-
 
     def _handle_input(self):
         for event in pygame.event.get():
@@ -57,11 +52,10 @@ class Rules:
             if clicked:
                 # Xử lý nút Back (Quay lại)
                 if self.back_button_rect.collidepoint(event.pos):
-                    self.return_state = "QUIT" # Quan trọng: Phải set là QUIT
+                    self.return_state = "QUIT" 
                     self.running = False
 
                 # Xử lý nút Next (Vào game)
-                # Lưu ý: Cả 3 chế độ đều dùng chung self.next_button_rect được định nghĩa ở _define_layout
                 is_next_clicked = False
                 
                 if self.mode == "SOLO_LEVELING" and self.next_button_rect.collidepoint(event.pos):
@@ -69,13 +63,11 @@ class Rules:
                 elif self.mode == "PLAY_TOGETHER" and self.next_button_rect.collidepoint(event.pos):
                     is_next_clicked = True
                 elif self.mode == "BATTLE_ROYALE" and self.next_button_rect.collidepoint(event.pos):
-                    # Đã sửa tên biến từ player_info_next_button_rect thành next_button_rect
                     is_next_clicked = True
                 
                 if is_next_clicked:
-                    self.return_state = "PLAY" # Quan trọng: Phải set là PLAY để app.py biết mà vào game
-                    self.running = False
-                
+                    self.return_state = "PLAY" 
+                    self.running = False       
 
     def Hover(self, img, rect):
         if rect.collidepoint(pygame.mouse.get_pos()):
@@ -95,7 +87,6 @@ class Rules:
         self.screen.blit(self.img_back_button, self.back_button_rect)
         if self.back_button_rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(self.img_back_hover_button, self.back_button_rect)
-
         
     def run(self):
         while self.running:

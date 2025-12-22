@@ -40,10 +40,7 @@ class SelectInfo:
         self._define_layout()
         self._load_assets()
 
-
     def _load_assets(self):
-        #self.img_panel = pygame.image.load(ASSETS_PATH / "grey_panel.png").convert_alpha()
-
         self.img_back_button = pygame.image.load(ASSETS_PATH/ "back_button.png").convert_alpha()
         self.img_back_hover_button = pygame.image.load(ASSETS_PATH/ "back_hover_button.png").convert_alpha()
         # =====================================================
@@ -55,15 +52,11 @@ class SelectInfo:
         self.img_normal_next_button = pygame.image.load(ONE_PLAYER_ASSETS_PATH / "normal_next_button.png").convert_alpha()
         self.img_hard_button = pygame.image.load(ONE_PLAYER_ASSETS_PATH / "hard_button.png").convert_alpha()
         self.img_hard_next_button = pygame.image.load(ONE_PLAYER_ASSETS_PATH / "hard_next_button.png").convert_alpha()
-       
-
         # =====================================================
         # Load assets cho chế độ 2 người chơi   
         # =====================================================
         self.img_2_player_info = pygame.image.load(ASSETS_PATH / "2_player_info.png").convert_alpha()
         self.img_2_player_info_next = pygame.image.load(ASSETS_PATH / "2_player_info_next.png").convert_alpha()
-
-
         # =====================================================
         # load avatar
         # =====================================================
@@ -74,7 +67,6 @@ class SelectInfo:
         #load font
         self.font_file = ASSETS_PATH / "fonts/Ruso-Regular.ttf"
             
-
     def _define_layout(self):
         self.back_button_rect = pygame.Rect(15, 15, 80, 60)
 
@@ -92,7 +84,6 @@ class SelectInfo:
 
         self.player_info_next_button_rect = pygame.Rect(430, 600, 275, 70)
 
-
     def _handle_input(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -106,9 +97,7 @@ class SelectInfo:
                         elif len(self.nickname_player1) < 15: self.nickname_player1 += event.unicode
                     if self.nickname_player2_active:
                         if event.key == pygame.K_BACKSPACE: self.nickname_player2 = self.nickname_player2[:-1]
-                        elif len(self.nickname_player2) < 15: self.nickname_player2 += event.unicode
-
-            
+                        elif len(self.nickname_player2) < 15: self.nickname_player2 += event.unicode  
 
             if self.mode == "SOLO_LEVELING":
                 if clicked:

@@ -8,7 +8,6 @@ from pathlib import Path
 
 ASSETS_PATH = Path(__file__).parent.parent / "assets"
 
-
 class Credit:
     def __init__(self, screen):
         self.screen = screen
@@ -22,19 +21,14 @@ class Credit:
         self._define_layout()
         self._load_assets()
 
-
     def _load_assets(self):
-        #self.img_panel = pygame.image.load(ASSETS_PATH / "grey_panel.png").convert_alpha()
-
         self.img_back_button = pygame.image.load(ASSETS_PATH/ "back_button.png").convert_alpha()
         self.img_back_hover_button = pygame.image.load(ASSETS_PATH/ "back_hover_button.png").convert_alpha()
         self.img_more_button = pygame.image.load(ASSETS_PATH / "more_button.png").convert_alpha()
         self.img_more_hover_button = pygame.image.load(ASSETS_PATH / "more_hover_button.png").convert_alpha()
 
         self.img_credit = pygame.image.load(ASSETS_PATH / "credit.png").convert_alpha()
-        self.img_what_did_we_do = pygame.image.load(ASSETS_PATH / "what_did_we_do.png").convert_alpha() 
-       
-        
+        self.img_what_did_we_do = pygame.image.load(ASSETS_PATH / "what_did_we_do.png").convert_alpha()   
         
     def _define_layout(self):
         self.back_button_rect = pygame.Rect(15, 15, 80, 60)
@@ -63,9 +57,6 @@ class Credit:
                     if self.more_button_rect.collidepoint(event.pos):
                         self.selected_mode = "What did we do" 
 
-                            
-                
-
     def Hover(self, img, rect):
         if rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(img,(0,0))
@@ -85,8 +76,7 @@ class Credit:
         self.screen.blit(self.img_back_button, self.back_button_rect)
         if self.back_button_rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(self.img_back_hover_button, self.back_button_rect)
-        
-        
+             
     def run(self):
         while self.running:
             self._handle_input()

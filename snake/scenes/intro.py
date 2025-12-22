@@ -26,7 +26,6 @@ class Intro:
         self.selected_save = None
         
         self.difficulty = s.DIFFICULTY_EASY
-        
 
         self.SAVES_PER_PAGE = 5
         self.current_page = 0
@@ -40,16 +39,12 @@ class Intro:
             self.img_play_button = pygame.image.load(ASSETS_PATH / "play_button.png").convert_alpha()
             self.img_continue_button = pygame.image.load(ASSETS_PATH / "continue_button.png").convert_alpha()
             self.img_ai_button = pygame.image.load(ASSETS_PATH / "ai_button.png").convert_alpha()
-            self.img_credit_button = pygame.image.load(ASSETS_PATH / "credit_button.png").convert_alpha()
-            
+            self.img_credit_button = pygame.image.load(ASSETS_PATH / "credit_button.png").convert_alpha()    
 
             panel = pygame.image.load(ASSETS_PATH / "grey_panel.png").convert_alpha()
             green = pygame.image.load(ASSETS_PATH / "green_button00.png").convert_alpha()
             blue = pygame.image.load(ASSETS_PATH / "blue_button00.png").convert_alpha()
-            red = pygame.image.load(ASSETS_PATH / "red_button00.png").convert_alpha()
-
-            
-            
+            red = pygame.image.load(ASSETS_PATH / "red_button00.png").convert_alpha()       
 
             self.img_diff_selected = pygame.transform.scale(green, (90, 40))
             self.img_diff_unselected = pygame.transform.scale(blue, (90, 40))
@@ -65,8 +60,6 @@ class Intro:
     def _define_layout(self):
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
         # Tính toán vị trí để căn giữa 3 nút nhỏ
-        
-
         self.input_rect = pygame.Rect(cx - 150, cy - 50, 300, 40)
         
         self.play_button_rect = pygame.Rect(157, 319, 277, 70)
@@ -74,11 +67,8 @@ class Intro:
         self.ai_button_rect = pygame.Rect(157, 492, 277, 70)
         self.credit_button_rect = pygame.Rect(224, 578, 277, 70)
 
-
-        
         #self.ai_button_rect = pygame.Rect(cx - 150, cy + 90, 300, 50)
         self.load_button_rect = pygame.Rect(cx - 150, cy + 160, 300, 50)
-
 
         self.back_button_rect = pygame.Rect(20, s.SCREEN_HEIGHT - 60, 100, 40)
         self.next_page_rect = pygame.Rect(s.SCREEN_WIDTH - 60, cy - 25, 50, 50)
@@ -99,8 +89,7 @@ class Intro:
             
             clicked = (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1)
 
-            if not self.showing_load_menu:
-                
+            if not self.showing_load_menu:   
                 
                 if clicked:
                     self.input_active = self.input_rect.collidepoint(event.pos)
@@ -110,10 +99,8 @@ class Intro:
                     if self.ai_button_rect.collidepoint(event.pos):
                             self.selected_mode = "AI"; self.running = False
                     if self.continue_button_rect.collidepoint(event.pos):
-                        self.showing_load_menu = True
-                        self.save_list = save_manager.get_save_list()
-                        self.current_page = 0
-                        self._build_current_page()
+                        self.selected_mode = "CONTINUE"  
+                        self.running = False
                     if self.credit_button_rect.collidepoint(event.pos):
                             self.selected_mode = "CREDIT"; self.running = False
             else:
@@ -141,8 +128,6 @@ class Intro:
             else:
                 self.screen.blit(img, rect)
 
-    
-
     def Hover(self, img, rect):
         if rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(img,(0,0))
@@ -150,7 +135,6 @@ class Intro:
     def _draw_elements(self):
         self.screen.blit(self.img_background, (0, 0))
        
-
         if not self.showing_load_menu:
 
             self.Hover(self.img_play_button, self.play_button_rect)
@@ -158,7 +142,6 @@ class Intro:
             self.Hover(self.img_ai_button, self.ai_button_rect) 
             self.Hover(self.img_credit_button, self.credit_button_rect)
             
-
         else:
             start = self.current_page * self.SAVES_PER_PAGE
             for i, rect in enumerate(self.save_rects):
@@ -180,8 +163,6 @@ class Intro:
                 self.HoverEffect(self.img_prev_btn, self.prev_page_rect)
                 t = self.font_menu.render("<", True, (255, 255, 255))
                 self.screen.blit(t, t.get_rect(center=self.prev_page_rect.center))
-
-        
 
     def run(self):
         while self.running:

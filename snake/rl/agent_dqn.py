@@ -16,12 +16,12 @@ class DQNAgent:
         self.criterion = nn.MSELoss() # Hàm tính sai số
 
         
-    def get_action(self, state, training=True): # Thêm tham số training
+    def get_action(self, state, training=True): 
         # Chiến thuật Epsilon-Greedy: Răng càng chơi nhiều càng bớt đi lung tung
         if training:
             self.epsilon = max(10, 700 - self.n_games)
         else:
-            self.epsilon = -1 # Khi xem kết quả, tắt hoàn toàn ngẫu nhiên
+            self.epsilon = -1 
         final_move = 0
         if random.randint(0, 1000) < self.epsilon:
             final_move = random.randint(0, 3)
@@ -30,11 +30,11 @@ class DQNAgent:
             prediction = self.model(state_tensor)
             final_move = torch.argmax(prediction).item()
         return final_move
-    # HÀM SỬA LỖI 1: Huấn luyện ngay lập tức sau mỗi bước đi
+    # Huấn luyện ngay lập tức sau mỗi bước đi
     def train_short_memory(self, state, action, reward, next_state, done):
         self.train_step(state, action, reward, next_state, done)
 
-    # HÀM SỬA LỖI 2: Huấn luyện từ một nhóm ký ức ngẫu nhiên (Batch)
+    # Huấn luyện từ một nhóm ký ức ngẫu nhiên (Batch)
     def train_long_memory(self):
         if len(self.memory) > 1000:
             mini_batch = self.memory.sample(1000)
@@ -71,5 +71,5 @@ class DQNAgent:
 
         self.optimizer.zero_grad()
         loss = self.criterion(target, pred)
-        loss.backward() # Lan truyền ngược
+        loss.backward() 
         self.optimizer.step()

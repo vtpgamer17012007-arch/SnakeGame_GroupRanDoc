@@ -90,14 +90,10 @@ class Rules:
                 continue
             
             if clicked:
-
-                # Xử lý nút Back (Quay lại)
                 if self.back_button_rect.collidepoint(event.pos):
                     self.sound_manager.play_sfx("click")
                     self.return_state = "QUIT" 
                     self.running = False
-
-                # Xử lý nút Next (Vào game)
                 is_next_clicked = False
                 
                 if self.mode == "SOLO_LEVELING" and self.next_button_rect.collidepoint(event.pos):

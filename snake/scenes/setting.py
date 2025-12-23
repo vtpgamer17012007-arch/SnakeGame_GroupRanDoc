@@ -10,13 +10,9 @@ class SettingPopup:
     def __init__(self, screen):
         self.screen = screen
         self.sound_manager = SoundManager()
-        # Font chữ số to, đậm
         self.font_val = pygame.font.SysFont('more-sugar.thin.ttf', 40, bold=True)
         
         self._load_assets()
-        
-        
-        # Kích thước nút bấm (Rộng, Cao)
         self.btn_size = (160,160) 
         
 
@@ -32,9 +28,6 @@ class SettingPopup:
         self.music_dec_pos = (720, btn_y)
         
         self.music_inc_pos = (835, btn_y)
-
-        # --------------------------------------------------------
-        # Tạo vùng bấm (Rect) từ tọa độ trên
         self.sfx_dec_rect = pygame.Rect(self.sfx_dec_pos, self.btn_size)
         self.sfx_inc_rect = pygame.Rect(self.sfx_inc_pos, self.btn_size)
         self.music_dec_rect = pygame.Rect(self.music_dec_pos, self.btn_size)
@@ -78,12 +71,9 @@ class SettingPopup:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = event.pos
             
-            # Back Button
             if self.back_button_rect.collidepoint(mouse_pos):
                 self.sound_manager.play_sfx("click")
                 return False 
-            
-            # Click ra ngoài bảng -> Đóng popup
             elif not self.board_rect.collidepoint(mouse_pos):
                 self.sound_manager.play_sfx("click")
                 return False

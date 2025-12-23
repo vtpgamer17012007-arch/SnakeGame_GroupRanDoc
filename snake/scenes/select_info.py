@@ -51,21 +51,16 @@ class SelectInfo:
     def _load_assets(self):
         self.img_back_button = pygame.image.load(ASSETS_PATH/ "back_button.png").convert_alpha()
         self.img_back_hover_button = pygame.image.load(ASSETS_PATH/ "back_hover_button.png").convert_alpha()
-        # =====================================================
         # Load assets cho chế độ 1 người chơi
-        # =====================================================
         self.img_1_player_info = pygame.image.load(ONE_PLAYER_ASSETS_PATH / "1_player_info.png").convert_alpha()
         self.img_easy_next_button = pygame.image.load(ONE_PLAYER_ASSETS_PATH / "easy_next_button.png").convert_alpha()
         self.img_normal_button = pygame.image.load(ONE_PLAYER_ASSETS_PATH / "normal_button.png").convert_alpha()
         self.img_normal_next_button = pygame.image.load(ONE_PLAYER_ASSETS_PATH / "normal_next_button.png").convert_alpha()
         self.img_hard_button = pygame.image.load(ONE_PLAYER_ASSETS_PATH / "hard_button.png").convert_alpha()
         self.img_hard_next_button = pygame.image.load(ONE_PLAYER_ASSETS_PATH / "hard_next_button.png").convert_alpha()
-        # =====================================================
         # Load assets cho chế độ 2 người chơi   
-        # =====================================================
         self.img_2_player_info = pygame.image.load(ASSETS_PATH / "2_player_info.png").convert_alpha()
         self.img_2_player_info_next = pygame.image.load(ASSETS_PATH / "2_player_info_next.png").convert_alpha()
-        # =====================================================
         # Load nút setting
         btn_w, btn_h = 120, 80 
         try:
@@ -78,11 +73,9 @@ class SelectInfo:
                 self.img_gear_hover = self.img_gear_normal.copy()
                 self.img_gear_hover.fill((30, 30, 30), special_flags=pygame.BLEND_RGB_ADD)
         except FileNotFoundError:
-                # Tạo nút giả màu xám nếu thiếu ảnh
                 self.img_gear_normal = pygame.Surface((btn_w, btn_h)); self.img_gear_normal.fill((100,100,100))
                 self.img_gear_hover = pygame.Surface((btn_w, btn_h)); self.img_gear_hover.fill((150,150,150))
         # load avatar
-        # =====================================================
         for name in s.AVATAR_LIST:
             self.avatar_image = pygame.image.load(ASSETS_PATH / f"{name}.png").convert_alpha()
             self.img_avatars.append(self.avatar_image)

@@ -7,31 +7,28 @@ class SnakeEnv2Pvp:
 
     def reset(self):
         mid_y = s.START_ROW + (s.GRID_HEIGHT // 2)
-        # P1: Bên trái, hướng sang phải
         start_x1 = s.START_COL + 2
         self.p1_pos = [(start_x1, mid_y), (start_x1 - 1, mid_y)]
         self.p1_dir = (1, 0)
         self.p1_score = 0
         self.p1_alive = True
 
-        # P2: Bên phải, hướng sang trái
         start_x2 = s.END_COL - 3
         self.p2_pos = [(start_x2, mid_y), (start_x2 + 1, mid_y)]
         self.p2_dir = (-1, 0)
         self.p2_score = 0
         self.p2_alive = True
 
-        self.food_pos = None # Cho P1
-        self.poop_pos = None # Cho P2
+        self.food_pos = None 
+        self.poop_pos = None 
         self.game_over = False
-        self.winner = None # 1, 2 hoặc "Draw"
+        self.winner = None 
 
         self._spawn_food()
         self._spawn_poop()
         return self.get_state()
 
     def _spawn_food(self):
-        # Spawn táo (cho P1)
         while True:
             pos = (random.randint(s.START_COL, s.END_COL - 1), 
                 random.randint(s.START_ROW, s.END_ROW - 1))
@@ -43,7 +40,6 @@ class SnakeEnv2Pvp:
                 break
 
     def _spawn_poop(self):
-        # Spawn shit (cho P2)
         while True:
             pos = (
                 random.randint(s.START_COL, s.END_COL - 1), 
@@ -58,11 +54,9 @@ class SnakeEnv2Pvp:
     def step(self, dir1, dir2):
         if self.game_over: return self.get_state()
 
-        # Update hướng
         if self.p1_alive and dir1: self.p1_dir = dir1
         if self.p2_alive and dir2: self.p2_dir = dir2
 
-        # Di chuyển đầu
         if self.p1_alive:
             head1 = (self.p1_pos[0][0] + self.p1_dir[0], self.p1_pos[0][1] + self.p1_dir[1])
             self.p1_pos.insert(0, head1)
@@ -71,11 +65,10 @@ class SnakeEnv2Pvp:
             head2 = (self.p2_pos[0][0] + self.p2_dir[0], self.p2_pos[0][1] + self.p2_dir[1])
             self.p2_pos.insert(0, head2)
 
-        # 1. Kiểm tra va chạm tường
+
         p1_hit_wall = self._check_wall(self.p1_pos[0]) if self.p1_alive else False
         p2_hit_wall = self._check_wall(self.p2_pos[0]) if self.p2_alive else False
 
-        # 2. Kiểm tra va chạm thân (tự cắn hoặc cắn nhau)
         p1_body = self.p1_pos[1:] if self.p1_alive else []
         p2_body = self.p2_pos[1:] if self.p2_alive else []
         
@@ -89,32 +82,31 @@ class SnakeEnv2Pvp:
             if (h2 in p2_body) or (h2 in self.p1_pos): 
                 p2_hit_wall = True
 
-        # 3. Kiểm tra ăn uống (LOGIC MỚI Ở ĐÂY)
         if self.p1_alive and not p1_hit_wall:
             h1 = self.p1_pos[0]
-            if h1 == self.food_pos: # P1 ăn Táo (Đúng)
+            if h1 == self.food_pos:
                 self.p1_score += 1
                 self._spawn_food()
-                # Không pop -> Dài ra
-            elif h1 == self.poop_pos: # P1 ăn Shit (Sai)
-                self.p1_score = max(0, self.p1_score - 2) # Trừ 2 điểm
-                self._spawn_poop() # Tạo cục shit mới chỗ khác
-                self.p1_pos.pop()  # Pop lần 1 (di chuyển bình thường)
+
+            elif h1 == self.poop_pos:
+                self.p1_score = max(0, self.p1_score - 2)
+                self._spawn_poop() 
+                self.p1_pos.pop()
                 self.p1_pos.pop() 
                 if len(self.p1_pos) < 1: 
                     p1_hit_wall = True
                     
             else:
-                self.p1_pos.pop() # Đi bình thường
+                self.p1_pos.pop() 
 
         if self.p2_alive and not p2_hit_wall:
             h2 = self.p2_pos[0]
-            if h2 == self.food_pos: # P2 ăn Shit (Đúng)
+            if h2 == self.food_pos:
                 self.p2_score += 1
                 self._spawn_food()
-            elif h2 == self.poop_pos: # P2 ăn Táo (Sai)
-                self.p2_score = max(0, self.p2_score - 2) # Trừ 2 điểm
-                self._spawn_poop() # Tạo quả táo mới chỗ khác
+            elif h2 == self.poop_pos:
+                self.p2_score = max(0, self.p2_score - 2)
+                self._spawn_poop() 
                 self.p2_pos.pop()
                 self.p2_pos.pop() 
                 if len(self.p2_pos) < 1:
@@ -122,7 +114,7 @@ class SnakeEnv2Pvp:
             else:
                 self.p2_pos.pop()
 
-        # Xử lý cái chết (chỉ chết nếu đâm tường hoặc đâm thân)
+
         if p1_hit_wall: self.p1_alive = False
         if p2_hit_wall: self.p2_alive = False
 

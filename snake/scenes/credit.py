@@ -85,23 +85,18 @@ class Credit:
                 self.show_setting = True
                 continue 
 
-            # 3. Xử lý các nút riêng theo từng màn hình
+
             if self.selected_mode == "What did we do":
-                # --- Màn hình "More" ---
                 if clicked:
                     if self.back_button_rect.collidepoint(event.pos):
                         self.sound_manager.play_sfx("click")
-                        self.selected_mode = None  # Quay lại màn hình Credit chính
+                        self.selected_mode = None 
             else:
-                # --- Màn hình Credit chính ---
                 if clicked:
-                    # Nút Back -> Thoát ra Intro
                     if self.back_button_rect.collidepoint(event.pos):
                         self.sound_manager.play_sfx("click")
                         self.return_state = "QUIT" 
                         self.running = False
-                    
-                    # Nút More -> Vào màn hình "What did we do"
                     if self.more_button_rect.collidepoint(event.pos):
                         self.sound_manager.play_sfx("click")
                         self.selected_mode = "What did we do"
@@ -116,23 +111,19 @@ class Credit:
             self.screen.blit(self.img_what_did_we_do, (0, 0))
         else:
             self.screen.blit(self.img_credit, (0, 0))
-            # Vẽ nút More
             self.screen.blit(self.img_more_button, self.more_button_rect)
             if self.more_button_rect.collidepoint(pygame.mouse.get_pos()):
                 self.screen.blit(self.img_more_hover_button, self.more_button_rect)
         
-         # Vẽ nút Back
         self.screen.blit(self.img_back_button, self.back_button_rect)
         if self.back_button_rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(self.img_back_hover_button, self.back_button_rect)
-            
-        # vẽ nút Setting
+
         if self.setting_button_rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(self.img_gear_hover, self.setting_button_rect)
         else:
             self.screen.blit(self.img_gear_normal, self.setting_button_rect)
 
-        #Vẽ Popup
         if self.show_setting:
             self.setting_popup.draw()
         

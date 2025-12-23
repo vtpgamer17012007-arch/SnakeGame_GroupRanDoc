@@ -25,13 +25,11 @@ class SoundManager:
         self.sounds = {}
         self.music_playing = None
         
-        # Mặc định volume 50
         self.vol_sfx = 50   
         self.vol_music = 50 
 
         self.SOUND_PATH = Path(__file__).parent.parent/ "assets/sounds"
         
-        # Load Sound Effects
         self._load_sound("click", "click.wav")
         self._load_sound("die", "die.wav")
         self._load_sound("win", "win.wav")
@@ -39,7 +37,6 @@ class SoundManager:
         self._load_sound("poop", "poop.wav")
         self._load_sound("input", "input.ogg")
         
-        # Load Nhạc nền
         self.music_files = {
             "menu": self.SOUND_PATH / "menu_music.mp3",
             "game": self.SOUND_PATH / "in_game.mp3",
@@ -60,7 +57,6 @@ class SoundManager:
             print(f"Error loading {filename}: {e}")
 
     def apply_volume(self):
-        # Pygame volume chạy từ 0.0 đến 1.0
         pygame.mixer.music.set_volume(self.vol_music / 100.0)
         for sound in self.sounds.values():
             sound.set_volume(self.vol_sfx / 100.0)

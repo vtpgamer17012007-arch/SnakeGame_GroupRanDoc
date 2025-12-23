@@ -22,11 +22,9 @@ class SoloLeveling(Board):
         self.sound_manager = SoundManager() 
         self.sound_manager.play_music("game")
   
-        # Load assets riêng cho Solo
         self._load_solo_assets()
         self._load_snake_sprites()
 
-        # Nếu là game load lại, set state
         if initial_state:
             self.env.set_state(initial_state)
             self.current_speed = initial_state.get("speed", difficulty)
@@ -68,7 +66,7 @@ class SoloLeveling(Board):
         self.screen.blit(self.img_solo_leveling_board, (0, 0))
         self.screen.blit(self.img_avartar, (55, 31))
 
-        # Vẽ rắn (Dùng lại logic vẽ cơ bản nếu cần, hoặc viết lại như dưới đây để tùy biến sprite)
+        # Vẽ Snake
         snake_pos = self.env.snake_pos
         direction = self.env.direction
         
@@ -137,12 +135,8 @@ class SoloLeveling(Board):
     def restore_game_state(self, data):
         """Nạp dữ liệu từ file save vào game"""
         if not data: return
-        
-        # 1. Khôi phục thông số cơ bản
         self.nickname = data.get("nickname", "Player")
         self.current_speed = data.get("difficulty", 10)
-        
-        # 2. Khôi phục môi trường (Env)
         self.env.score = data.get("score", 0)
         self.env.snake_pos = [tuple(p) for p in data.get("snake_pos", [])] # Chuyển về tuple
         self.env.direction = tuple(data.get("direction", (1, 0)))

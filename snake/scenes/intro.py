@@ -71,35 +71,33 @@ class Intro:
                     raw_hover = pygame.image.load(ASSETS_PATH / "setting_button_hover.png").convert_alpha()
                     self.img_gear_hover = pygame.transform.smoothscale(raw_hover, btn_size)
                 except FileNotFoundError:
-                    # Tạo hiệu ứng hover giả nếu thiếu ảnh hover
                     self.img_gear_hover = self.img_gear_normal.copy()
                     self.img_gear_hover.fill((30, 30, 30), special_flags=pygame.BLEND_RGB_ADD)
             except FileNotFoundError:
-                # Tạo nút giả màu xám nếu thiếu ảnh gốc (Tránh crash)
                 print("Warning: Thiếu file setting_button.png")
                 self.img_gear_normal = pygame.Surface(btn_size)
                 self.img_gear_normal.fill((100, 100, 100))
                 self.img_gear_hover = pygame.Surface(btn_size)
                 self.img_gear_hover.fill((150, 150, 150))
-            # ---------------------------------------------------
+
 
         except FileNotFoundError as e:
             print(f"Lỗi load ảnh Intro: {e}")
             sys.exit()
 
     def _define_layout(self):
-        btn_width = 120  # Chiều rộng
-        btn_height = 80 # Chiều cao
+        btn_width = 120  
+        btn_height = 80
         
         margin_x = 8
-        margin_y = 10# Cách lề trên 30px
+        margin_y = 10 
         
         rect_x = s.SCREEN_WIDTH - btn_width - margin_x
         rect_y = margin_y
         self.setting_button_rect = pygame.Rect(rect_x, rect_y, btn_width, btn_height)
         
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
-        # Tính toán vị trí để căn giữa 3 nút nhỏ
+
         self.input_rect = pygame.Rect(cx - 150, cy - 50, 300, 40)
         
         self.play_button_rect = pygame.Rect(157, 319, 277, 70)
@@ -107,7 +105,6 @@ class Intro:
         self.ai_button_rect = pygame.Rect(157, 492, 277, 70)
         self.credit_button_rect = pygame.Rect(224, 578, 277, 70)
 
-        #self.ai_button_rect = pygame.Rect(cx - 150, cy + 90, 300, 50)
         self.load_button_rect = pygame.Rect(cx - 150, cy + 160, 300, 50)
 
         self.back_button_rect = pygame.Rect(20, s.SCREEN_HEIGHT - 60, 100, 40)
@@ -234,7 +231,6 @@ class Intro:
             self.screen.blit(self.img_gear_hover, self.setting_button_rect)
         else:
             self.screen.blit(self.img_gear_normal, self.setting_button_rect)
-        # Vẽ Popup Setting lên trên cùng
         if self.show_setting:
             self.setting_popup.draw()
             

@@ -114,18 +114,14 @@ class BattleRoyal(Board):
         old_p1 = self.env.p1_score
         old_p2 = self.env.p2_score
 
-        # Lấy move tiếp theo cho P1 và P2
+ 
         d1 = self._get_next_move(self.input_q1, self.env.p1_dir)
         d2 = self._get_next_move(self.input_q2, self.env.p2_dir)
         
         state = self.env.step(d1, d2)
-
-        
-        # Kiểm tra nếu có ai đó tăng điểm (Ăn đúng)
         if state['p1_score'] > old_p1 or state['p2_score'] > old_p2:
             self.sound_manager.play_sfx("eat")
-        
-        # Kiểm tra nếu có ai đó bị trừ điểm (Ăn sai)
+
         elif state['p1_score'] < old_p1 or state['p2_score'] < old_p2:
             self.sound_manager.play_sfx("poop")
 
@@ -205,7 +201,7 @@ class BattleRoyal(Board):
             "p2_pos": self.env.p2_pos,
             "p1_dir": self.env.p1_dir,
             "p2_dir": self.env.p2_dir,
-            "p1_alive": self.env.p1_alive, # Quan trọng cho Battle Royale
+            "p1_alive": self.env.p1_alive, 
             "p2_alive": self.env.p2_alive,
             "food_pos": self.env.food_pos,
             "poop_pos": self.env.poop_pos
@@ -216,13 +212,13 @@ class BattleRoyal(Board):
         self.name1 = data.get("name1", "Player 1")
         self.name2 = data.get("name2", "Player 2")
         
-        # Env restore
+
         self.env.p1_score = data.get("p1_score", 0)
         self.env.p2_score = data.get("p2_score", 0)
         self.env.p1_alive = data.get("p1_alive", True)
         self.env.p2_alive = data.get("p2_alive", True)
         
-        # Lưu ý: JSON lưu tuple thành list, cần ép kiểu lại về tuple để so sánh không bị lỗi
+    
         self.env.p1_pos = [tuple(p) for p in data.get("p1_pos", [])]
         self.env.p2_pos = [tuple(p) for p in data.get("p2_pos", [])]
         self.env.p1_dir = tuple(data.get("p1_dir", (0, 0)))

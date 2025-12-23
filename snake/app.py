@@ -30,7 +30,7 @@ class SnakeApp:
         self.nickname_player1 = ""
         self.nickname_player2 = ""
         
-        self.avatar_player1 = "avatar1" # Sửa tên cho khớp với settings.AVATAR_LIST
+        self.avatar_player1 = "avatar1" 
         self.avatar_player2 = "avatar2"
         
         self.selected_mode = None 
@@ -75,15 +75,11 @@ class SnakeApp:
                 elif action == "LOAD_GAME" and data:
                     mode_id = data.get("mode")
                     
-                    # --- SỬA LỖI LOAD GAME TẠI ĐÂY ---
+                    
                     if mode_id == "SOLO_LEVELING":
                         nick = data.get("nickname", "Player")
                         diff = data.get("difficulty", 10)
-                        # Sửa lỗi: Lấy thêm avatar từ file save hoặc dùng mặc định
-                        # Lưu ý: file save hiện tại của bạn chưa lưu avatar, nên tạm thời dùng self.avatar_player1 hoặc mặc định
                         avt = data.get("avatar", "avatar1") 
-
-                        # Khởi tạo đúng số lượng tham số
                         self.current_scene_obj = SoloLeveling(self.screen, nick, avt, diff)
                         self.current_scene_obj.restore_game_state(data)
                         self.current_scene_name = "SOLO_LEVELING"
@@ -112,7 +108,7 @@ class SnakeApp:
                     pygame.event.clear()
             
             # ==========================================
-            # 3. CHỌN MODE & NHẬP INFO
+            # 3. CHỌN MODE
             # ==========================================
             elif self.current_scene_name == "PLAY_MODE":
                 self.current_scene_obj = PlayMode(self.screen)
@@ -124,7 +120,9 @@ class SnakeApp:
                     self.current_scene_name = "INTRO" 
                 else:
                     self.current_scene_name = "INTRO" 
-            
+            # ==========================================
+            # 4. NHẬP INFO
+            # ==========================================
             elif self.current_scene_name == "SELECT_INFO":
                 self.current_scene_obj = SelectInfo(self.screen, self.selected_mode)
                 self.selected_mode, self.nickname_player1, self.nickname_player2, self.avatar_player1, self.avatar_player2, self.difficulty = self.current_scene_obj.run()
@@ -145,7 +143,6 @@ class SnakeApp:
                 if rules_action == "QUIT":
                     self.current_scene_name = "SELECT_INFO" 
                 else:
-                    # Reset object về None để đảm bảo Game mới được khởi tạo sạch sẽ
                     self.current_scene_obj = None 
                     
                     if self.selected_mode == "SOLO_LEVELING":
@@ -156,42 +153,28 @@ class SnakeApp:
                         self.current_scene_name = "BATTLE_ROYALE"
 
             # ==========================================
-            # 5. IN GAME (QUAN TRỌNG: ĐÃ SỬA LỖI ĐƠ)
+            # 5. IN GAME 
             # ==========================================
             elif self.current_scene_name == "SOLO_LEVELING":
-                # 1. Chỉ khởi tạo nếu chưa có object hoặc object sai loại
                 if not isinstance(self.current_scene_obj, SoloLeveling):
                     self.current_scene_obj = SoloLeveling(
                         self.screen, self.nickname_player1, self.avatar_player1, self.difficulty
                     )
-                
-                # 2. GỌI HÀM RUN (Đây là dòng bạn bị thiếu)
-                result = self.current_scene_obj.run()
-                
-                # 3. Xử lý sau khi thoát game (về menu hay chơi lại)
-                # Board.run() trả về "INTRO" hoặc bạn có thể tùy biến
                 self.current_scene_name = result 
-
             elif self.current_scene_name == "PLAY_TOGETHER":
                 if not isinstance(self.current_scene_obj, PlayTogether):
                     self.current_scene_obj = PlayTogether(
                         self.screen, self.avatar_player1, self.avatar_player2, self.nickname_player1, self.nickname_player2
                     )
-                
-                # GỌI HÀM RUN
                 result = self.current_scene_obj.run()
                 self.current_scene_name = result
-
             elif self.current_scene_name == "BATTLE_ROYALE":
                 if not isinstance(self.current_scene_obj, BattleRoyal):
                     self.current_scene_obj = BattleRoyal(
                         self.screen, self.avatar_player1, self.avatar_player2, self.nickname_player1, self.nickname_player2
                     )
-                
-                # GỌI HÀM RUN
                 result = self.current_scene_obj.run()
-                self.current_scene_name = result
-            
+                self.current_scene_name = result          
             # ==========================================
             # 6. OTHER MODES
             # ==========================================

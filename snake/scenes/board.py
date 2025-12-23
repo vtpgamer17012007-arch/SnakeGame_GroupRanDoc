@@ -15,7 +15,6 @@ class Board:
         self.clock = pygame.time.Clock()
         self.running = True
         
-        # Font & UI Config
         self.font = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 24)
         self.font_game_over = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 55)
         self.font_button = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 37)
@@ -23,16 +22,15 @@ class Board:
         self.nickname = nickname
         self.current_speed = difficulty
         self.is_game_over = False
-        
-        # --- Pause & Save System States ---
-        self.show_save_dialog = False       # Cờ bật tắt hộp thoại
-        self.save_input_text = ""           # Chữ người dùng đang nhập
-        self.input_placeholder = "Enter Save name..." # Chữ hướng dẫn mờ
+
+        self.show_save_dialog = False     
+        self.save_input_text = ""         
+        self.input_placeholder = "Enter Save name..."
         self.game_state_to_save = {}
         self.is_paused = False
         self.font_input = pygame.font.Font(FONT_PATH / "more-sugar.thin.ttf", 30)
         
-        # Default Environment (Solo default)
+
         self.env = SnakeEnv()
         self.input_queue = []
         self.snake_sprites = {}
@@ -40,7 +38,7 @@ class Board:
         self.sound_manager = SoundManager() 
         self.sound_manager.play_music("game")
         
-        # Load Resources
+   
         self._load_ui_assets()
         self._define_layout()
 
@@ -61,11 +59,10 @@ class Board:
         self.input_box_rect = pygame.Rect(cx - 150, cy - 25, 300, 50)
 
     def _load_snake_sprites(self):
-        # Hàm này để các lớp con Override nếu cần load nhiều loại rắn khác nhau
         try:
             SPRITE_PATH = Path(__file__).parent.parent / "assets/snake_sprites"
             sz = (s.GRID_SIZE, s.GRID_SIZE)
-            # (Giữ nguyên code load rắn cơ bản 1 người)
+
             h_down = pygame.image.load(SPRITE_PATH / "head_down.png").convert_alpha()
             self.snake_sprites["head_down"] = pygame.transform.scale(h_down, sz)
             self.snake_sprites["head_up"] = pygame.transform.rotate(self.snake_sprites["head_down"], 180)
@@ -105,9 +102,8 @@ class Board:
             print("Lỗi load ảnh UI")
             sys.exit()
 
-    # --- INPUT HANDLING (CORE) ---
+
     def _handle_input(self):
-        # Mặc định xử lý cho 1 người chơi (các class con 2 người sẽ override)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -155,43 +151,37 @@ class Board:
                 save_manager.delete_save(self.save_name_if_loaded)
                 self.loaded_and_died_instantly = True
 
-    # --- PAUSE & SAVE LOGIC (INHERITED) ---
     def get_game_state(self):
-        # Class con PHẢI override hàm này để trả về dữ liệu cần lưu
         return {}
 
     def _handle_pause_input(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT: self.running = False
-            
-            # --- TRƯỜNG HỢP 1: ĐANG NHẬP TÊN SAVE ---
+
             if self.show_save_dialog:
                 if event.type == pygame.KEYDOWN:
                     self.sound_manager.play_sfx("input")
                     if event.key == pygame.K_ESCAPE:
-                        self.show_save_dialog = False # Hủy, quay lại menu pause
+                        self.show_save_dialog = False
                         self.save_input_text = ""
                     
                     elif event.key == pygame.K_RETURN:
-                        # Nhấn Enter để lưu
                         final_name = self.save_input_text.strip()
-                        if not final_name: final_name = "Untitled" # Tên mặc định nếu để trống
+                        if not final_name: final_name = "Untitled" 
                         
                         save_manager.save_game(final_name, self.game_state_to_save)
-                        self.running = False # Lưu xong thoát game
+                        self.running = False
                     
                     elif event.key == pygame.K_BACKSPACE:
                         self.save_input_text = self.save_input_text[:-1]
                     
                     else:
-                        # Giới hạn 15 ký tự
                         if len(self.save_input_text) < 15:
                             self.save_input_text += event.unicode
 
-            # --- TRƯỜNG HỢP 2: MENU PAUSE THƯỜNG ---
             else:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    self.is_paused = False # Tắt pause
+                    self.is_paused = False 
                 
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.sound_manager.play_sfx("click")
@@ -202,17 +192,15 @@ class Board:
                         self.running = False
                     
                     elif self.save_quit_rect.collidepoint(event.pos):
-                        # BẤM NÚT SAVE -> BẬT HỘP THOẠI
                         
                         self.game_state_to_save = self.get_game_state()
                         self.show_save_dialog = True
-                        self.save_input_text = "" # Reset chữ mỗi lần mở
+                        self.save_input_text = "" 
 
     def _handle_game_over_input(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT: self.running = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                # Class con cần reset đúng env của nó, nên env phải được reset trong hàm reset() của env
                 if self.play_again_rect.collidepoint(event.pos):
                     self.sound_manager.play_sfx("click")
                     self.sound_manager.play_music("game")   
@@ -220,14 +208,13 @@ class Board:
                     self.sound_manager.stop_sfx("win")
                     self.env.reset()
                     self.is_game_over = False
-                    self.input_queue = [] # Reset queue
+                    self.input_queue = [] 
                 if self.menu_rect.collidepoint(event.pos):
                     self.sound_manager.play_sfx("click")
                     self.sound_manager.stop_sfx("die")
                     self.sound_manager.stop_sfx("win")
                     self.running = False
 
-    # --- DRAWING (SHARED) ---
     def _draw_overlay(self):
         overlay = pygame.Surface((s.SCREEN_WIDTH, s.SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 180))
@@ -236,43 +223,32 @@ class Board:
     def _draw_pause_ui(self):
         self._draw_overlay()
         cx, cy = s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2
-        
-        # --- NẾU ĐANG BẬT HỘP THOẠI NHẬP TÊN ---
+  
         if self.show_save_dialog:
-            # 1. Vẽ khung nền cho ô nhập
             pygame.draw.rect(self.screen, (50, 50, 50), self.input_box_rect)
             pygame.draw.rect(self.screen, (255, 255, 255), self.input_box_rect, 2)
-            
-            # 2. Xử lý hiệu ứng Placeholder (Chữ mờ)
+
             if self.save_input_text == "":
                 txt_surf = self.font_button.render(self.input_placeholder, True, (150, 150, 150)) # Dùng font_button cho to rõ
             else:
                 txt_surf = self.font_button.render(self.save_input_text, True, (255, 255, 255))
             
-            # Căn giữa chữ trong ô
             self.screen.blit(txt_surf, txt_surf.get_rect(center=self.input_box_rect.center))
             
-            # 3. Hướng dẫn bên dưới
             hint = self.font.render("[ENTER] Save   [ESC] Cancel", True, (200, 200, 200))
             self.screen.blit(hint, hint.get_rect(center=(cx, self.input_box_rect.y + 70)))
-
-        # --- NẾU KHÔNG (MENU PAUSE THƯỜNG) ---
         else:
-            # Tiêu đề PAUSED
             t = self.font_game_over.render("PAUSED", True, (255, 255, 0))
             self.screen.blit(t, t.get_rect(center=(cx, self.resume_rect.y - 60)))
             
-            # 1. Nút Resume 
             self.screen.blit(self.img_resume, self.resume_rect)
             t_res = self.font_button.render("Resume", True, (255, 255, 255))
             self.screen.blit(t_res, t_res.get_rect(center=self.resume_rect.center))
-            
-            # 2. Nút Save & Quit 
+
             self.screen.blit(self.img_save_quit, self.save_quit_rect)
             t_save = self.font_button.render("Save & Quit", True, (255, 255, 255))
             self.screen.blit(t_save, t_save.get_rect(center=self.save_quit_rect.center))
             
-            # 3. Nút Main Menu
             self.screen.blit(self.img_main_menu, self.main_menu_pause_rect)
             t_menu = self.font_button.render("Main Menu", True, (255, 255, 255))
             self.screen.blit(t_menu, t_menu.get_rect(center=self.main_menu_pause_rect.center))
@@ -290,9 +266,6 @@ class Board:
         t = self.font_button.render("Main Menu", True, (255, 255, 255))
         self.screen.blit(t, t.get_rect(center=self.menu_rect.center))
 
-    def _draw_elements(self):
-        # Override ở class con
-        pass
 
     def run(self):
         while self.running:

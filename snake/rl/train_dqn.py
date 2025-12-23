@@ -4,9 +4,6 @@ import numpy as np
 import sys
 import os
 import json
-
-
-# Import các thành phần từ dự án của bạn
 from snake.core.env_snake import SnakeEnv
 from snake.core.snake_render import SnakeRenderer
 from snake.rl.agent_dqn import DQNAgent
@@ -14,7 +11,6 @@ from snake.rl.train_graph import plot
 from snake import settings as s
 
 def train():
-    # 1. Khởi tạo Pygame và màn hình (screen)
     pygame.init()
     screen = pygame.display.set_mode((s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
     pygame.display.set_caption("AI Training Mode - Group Ran Doc")
@@ -23,7 +19,7 @@ def train():
     # 2. Khởi tạo các thành phần logic
     env = SnakeEnv()
     agent = DQNAgent()
-    renderer = SnakeRenderer(screen) # Sử dụng Renderer dùng chung để vẽ
+    renderer = SnakeRenderer(screen) 
 
     # Các biến theo dõi tiến trình
     plot_scores = []
@@ -34,12 +30,10 @@ def train():
     n_games_old, record_old = load_stats()
     
     # 2. Cập nhật cho Agent để tính Epsilon chính xác
-    # Công thức: epsilon = 80 - n_games
+    # Công thức: epsilon = 700 - n_games
     agent.n_games = n_games_old 
     record = record_old
-    
-    # 3. Nạp lại trọng số mạng nơ-ron (Tri thức)
-    # Cần đảm bảo bạn đã thêm hàm load() vào class Linear_QNet
+    # 3. Tải mô hình cũ nếu có
     agent.model.load('model.pth')
     
     # Biến điều khiển hiển thị (Bật để xem AI chơi, tắt để train siêu tốc)
@@ -56,7 +50,7 @@ def train():
 
         # A. QUY TRÌNH TƯƠNG TÁC (RL LOOP)
         
-        # 1. Nhìn: Lấy trạng thái 11 chiều
+        # 1. Nhìn: Lấy trạng thái 16 chiều
         state_old = env.get_state_rl()
 
         # 2. Quyết định: Agent chọn hành động (0-3)
@@ -67,12 +61,12 @@ def train():
         directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
         move = directions[action_idx]
         current_dir = env.direction
-        # Kiểm tra nếu move ngược với current_dir (tổng vector bằng 0)
+       
         if (move[0] + current_dir[0] == 0) and (move[1] + current_dir[1] == 0):
             move = current_dir # Nếu AI ra lệnh quay đầu, bắt nó tiếp tục đi thẳng
 
         # 4. Phản hồi: Thực hiện bước đi và nhận thưởng
-        # Reward: Ăn(+10), Chết(-10), Phân(-5), Di chuyển(-0.1)
+        # Reward: +20 ăn mồi, -10 ăn phân, -150 đâm tường/thân, -0.3 xa mồi, +0.3 gần mồi
         _, reward, done, _ = env.step(move)
         state_new = env.get_state_rl()
 
@@ -84,9 +78,8 @@ def train():
 
         # B. HIỂN THỊ ĐỒ HỌA
         if VISUALIZE:
-            renderer.draw(env) # Vẽ rắn, mồi, phân bằng sprite xịn
+            renderer.draw(env) 
             pygame.display.update()
-            #Giới hạn tốc độ khung hình khi xem (tầm 30-60 FPS)
             clock.tick(60) 
 
         # C. XỬ LÝ KHI KẾT THÚC MỘT TRẬN (EPISODE)
@@ -98,26 +91,22 @@ def train():
             # Học sâu từ bộ nhớ (Long memory)
             agent.train_long_memory()    #
 
-            # --- TÍNH NĂNG 1: LƯU MODEL TỐT NHẤT (BEST MODEL) ---
+            # LƯU MODEL TỐT NHẤT (BEST MODEL)
             if final_score > record:     #
                 record = final_score
-                agent.model.save(file_name='best_model.pth') # Lưu file tri thức tốt nhất
+                agent.model.save(file_name='best_model.pth')
 
-            # --- TÍNH NĂNG 2: LƯU CHECKPOINT MỖI 100 TRẬN ---
-            # Dòng này giúp bạn giữ lại các mốc lịch sử huấn luyện
-            if agent.n_games % 100 == 0: #
-                agent.model.save(episode=agent.n_games) # Sẽ tạo file model_ep100.pth, model_ep200.pth...
+            # LƯU CHECKPOINT MỖI 100 TRẬN ---
+            if agent.n_games % 100 == 0: 
+                agent.model.save(episode=agent.n_games) 
 
-            # --- TÍNH NĂNG 3: LƯU TIẾN TRÌNH VÀO JSON ---
-            # Giúp bạn tiếp tục train từ đúng số trận và kỷ lục cũ khi bật lại máy
             save_stats(agent.n_games, record)
-
-            # Cập nhật đồ thị và in log
+            # Cập nhật đồ thị huấn luyện
             plot_scores.append(final_score)
             total_score += final_score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores) # Vẽ đồ thị tiến trình huấn luyện
+            plot(plot_scores, plot_mean_scores) 
 
             print(f'Trận: {agent.n_games} | Điểm: {final_score} | Kỷ lục: {record} | Epsilon: {agent.epsilon:.2f}')
 
@@ -129,7 +118,7 @@ def save_stats(n_games, record):
     }
     with open("stats.json", "w") as f:
         json.dump(stats, f)
-    # print("--> Đã lưu tiến trình vào stats.json")
+   
 
 def load_stats():
     """Tải số trận và kỷ lục từ file JSON nếu tồn tại."""
@@ -137,6 +126,6 @@ def load_stats():
         with open("stats.json", "r") as f:
             stats = json.load(f)
             return stats.get("n_games", 0), stats.get("record", 0)
-    return 0, 0 # Trả về mặc định nếu file chưa tồn tại
+    return 0, 0 
 if __name__ == '__main__':
     train()

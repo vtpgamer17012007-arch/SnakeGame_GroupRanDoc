@@ -21,14 +21,11 @@ class SnakeRenderer:
      
 
     def _load_assets(self):
-        
-        # Copy logic load ảnh từ SoloLeveling qua đây một lần duy nhất
         SPRITE_PATH = Path(__file__).parent.parent / "assets/snake_sprites"
         ONE_PLAYER_ASSETS_PATH = Path(__file__).parent.parent / "assets/1_player_asset"
         sz = (s.GRID_SIZE, s.GRID_SIZE)
 
         self.img_avartar = pygame.image.load(ASSETS_PATH/ "avatar6.png").convert_alpha()
-        #load font
         self.font_file = ASSETS_PATH / "fonts/Ruso-Regular.ttf"
         
         self.img_solo_leveling_board = pygame.transform.scale(pygame.image.load(ASSETS_PATH / "AI_board.png"), (s.SCREEN_WIDTH, s.SCREEN_HEIGHT))
@@ -86,9 +83,7 @@ class SnakeRenderer:
                 prev_pos = snake_pos[index - 1]
                 next_pos = snake_pos[index + 1]
                 
-                # vec_prev: hướng từ prev -> current (vào)
                 vec_prev = (pos[0] - prev_pos[0], pos[1] - prev_pos[1])   
-                # vec_next: hướng từ current -> next (ra)
                 vec_next = (next_pos[0] - pos[0], next_pos[1] - pos[1])   
 
                 if vec_prev == vec_next:
@@ -97,7 +92,6 @@ class SnakeRenderer:
                     else:
                         sprite = self.snake_sprites["body_vertical"]
                 else:
-                    # Mapping
                     turn_map = {
                         ((0, 1), (-1, 0)): "turn_DL", # Dưới -> Trái
                         ((1, 0), (0, -1)): "turn_DL", # Phải -> Lên

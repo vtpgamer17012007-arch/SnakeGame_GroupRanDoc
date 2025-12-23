@@ -76,7 +76,6 @@ class PlayMode:
                 self.running = False
                 self.selected_mode = "QUIT"
             
-            # Xử lý Popup 
             if self.show_setting:
                 if not self.setting_popup.handle_input(event):
                     self.show_setting = False
@@ -85,7 +84,6 @@ class PlayMode:
             clicked = (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1)
 
             if clicked:
-                # Mở setting
                 if self.setting_button_rect.collidepoint(event.pos):
                     self.sound_manager.play_sfx("click")
                     self.show_setting = True
@@ -122,7 +120,6 @@ class PlayMode:
         if self.back_button_rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(self.img_back_hover_button, self.back_button_rect)
         
-        # Vẽ nút Setting và Popup
         if self.setting_button_rect.collidepoint(pygame.mouse.get_pos()):
             self.screen.blit(self.img_gear_hover, self.setting_button_rect)
         else:

@@ -17,13 +17,9 @@ class PlayTogether(Board):
         self.avatar2 = avatar2
         
         super().__init__(screen, name1, difficulty=10)
-        
-        # Override Environment
         self.env = SnakeEnv2P()
         self.input_q1 = []
         self.input_q2 = []
-        
-        # Sprites riêng cho 2 rắn
         self.snake_sprites_p1 = {}
         self.snake_sprites_p2 = {}
         self._load_snake_sprites()
@@ -112,9 +108,6 @@ class PlayTogether(Board):
     
     def _update_game(self):
         if self.env.game_over: return
-
-        # Lấy move tiếp theo cho P1 và P2
-        # Lưu điểm cũ để so sánh
         old_p1 = self.env.p1_score
         old_p2 = self.env.p2_score
 
@@ -213,13 +206,11 @@ class PlayTogether(Board):
         self.name1 = data.get("name1", "Player 1")
         self.name2 = data.get("name2", "Player 2")
         
-        # Env restore
         self.env.p1_score = data.get("p1_score", 0)
         self.env.p2_score = data.get("p2_score", 0)
         self.env.p1_alive = data.get("p1_alive", True)
         self.env.p2_alive = data.get("p2_alive", True)
         
-        # Lưu ý: JSON lưu tuple thành list, cần ép kiểu lại về tuple để so sánh không bị lỗi
         self.env.p1_pos = [tuple(p) for p in data.get("p1_pos", [])]
         self.env.p2_pos = [tuple(p) for p in data.get("p2_pos", [])]
         self.env.p1_dir = tuple(data.get("p1_dir", (0, 0)))

@@ -46,7 +46,6 @@ class SnakeEnv:
     def step(self, action_direction):
         if self.game_over:
             return self.get_state(), 0, True, {}
-        # Lấy khoảng cách cũ trước khi di chuyển
         old_dist = abs(self.snake_pos[0][0] - self.food_pos[0]) + \
                abs(self.snake_pos[0][1] - self.food_pos[1])
         self.direction = action_direction
@@ -61,9 +60,8 @@ class SnakeEnv:
             self.game_over = True
             return self.get_state(), -150, True, {}
 
-        # Lưu lại chiều dài HIỆN TẠI trước khi thêm đầu mới
         current_length = len(self.snake_pos)
-        self.snake_pos.insert(0, new_head) # Thêm đầu mới vào
+        self.snake_pos.insert(0, new_head) 
         reward = 0
 
         # 2. Logic ăn mồi (Giữ nguyên: không pop để dài ra)
@@ -75,29 +73,21 @@ class SnakeEnv:
         # 3. Logic dẫm phải "poop" (Thay đổi tại đây)
         elif any(p['pos'] == new_head for p in self.poops):
             if current_length == 1:
-                # TRƯỜNG HỢP 1: Chỉ có duy nhất cái đầu -> CHẾT
                 self.game_over = True
                 reward = -100
             else:
-                # TRƯỜNG HỢP 2: Có thân -> RÚT NGẮN THÂN
-                # Xóa poop đã ăn
                 for i, p in enumerate(self.poops):
                     if p['pos'] == new_head:
                         self.poops.pop(i)
                         break
                 
-                # Logic rút ngắn: 
-                # pop lần 1: để bù lại phần đầu vừa thêm (giữ nguyên chiều dài)
-                # pop lần 2: để thực sự làm con rắn ngắn đi 1 đốt
                 self.snake_pos.pop() 
-                if len(self.snake_pos) > 1: # Đảm bảo không pop mất cái đầu duy nhất
-                    self.snake_pos.pop()
-                
+                if len(self.snake_pos) > 1: 
+                    self.snake_pos.pop()        
                 self.score = max(0, self.score - 1)
-                reward = -10 # Phạt vừa phải để AI biết đường né
+                reward = -10 
                 self._spawn_poop()
         
-        # 4. Di chuyển bình thường
         else:
             self.snake_pos.pop()
             new_dist = abs(new_head[0] - self.food_pos[0]) + \
@@ -115,14 +105,11 @@ class SnakeEnv:
     def is_collision(self, pt=None):
         if pt is None:
             pt = self.snake_pos[0]
-        # Kiểm tra đâm tường dựa trên cấu hình settings.py
         if pt[0] < s.START_COL or pt[0] >= s.END_COL or \
         pt[1] < s.START_ROW or pt[1] >= s.END_ROW:
             return True
-        # Kiểm tra đâm vào thân rắn
         if pt in self.snake_pos[1:]:
             return True
-        # MỚI: Kiểm tra va chạm với poop
         if any(p['pos'] == pt for p in self.poops):
             return True
         return False

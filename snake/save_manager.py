@@ -12,7 +12,7 @@ def _read_data():
         with open(SAVE_FILE, 'r') as f:
             return json.load(f)
     except json.JSONDecodeError:
-        return {}  # Trả về rỗng nếu file bị lỗi
+        return {}  
 
 def _write_data(data):
     """Ghi dictionary vào file save."""
@@ -39,13 +39,13 @@ def check_save_exists(save_name):
 def load_game(save_name):
     """Tải trạng thái game từ một tên đã lưu."""
     data = _read_data()
-    return data.get(save_name)  # Dùng .get() để trả về None nếu không tìm thấy
+    return data.get(save_name)  
 
 def delete_save(save_name):
     """Xóa một file save cụ thể dựa trên tên."""
     data = _read_data()
     if save_name in data:
-        data.pop(save_name)  # Xóa key khỏi dictionary
+        data.pop(save_name) 
         _write_data(data)
         print(f"Đã xóa save file: {save_name}")
     else:

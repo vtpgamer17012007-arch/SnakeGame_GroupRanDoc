@@ -17,17 +17,13 @@ class ContinueScene:
         self.show_setting = False
         self.setting_popup = SettingPopup(self.screen)
         
-        # Load nút setting
         self._load_setting_assets()
-        # --- CẤU HÌNH DEBUG ---
         self.debug_mode = False
         
         self.font = pygame.font.SysFont('Arial', 22, bold=True)
         self.font_score = pygame.font.SysFont('Arial', 20)
         self.font_debug = pygame.font.SysFont('Arial', 12) 
    
-
-        # --- 1. THIẾT LẬP ĐƯỜNG DẪN ---
         self.base_path = Path(__file__).resolve().parent.parent
         self.assets_dir = self.base_path / "assets"
         
@@ -39,15 +35,11 @@ class ContinueScene:
                     break
         
         if not self.load_path: self.load_path = self.assets_dir
-
-        # --- 2. THIẾT LẬP HITBOX ---
         self.selected_mode = "SOLO_LEVELING" 
         self._setup_layout()
 
-        # --- 3. LOAD HÌNH ẢNH ---
         self._load_resources()
 
-        # --- 4. LOAD DỮ LIỆU SAVE ---
         self.filtered_saves = [] 
         self._refresh_save_data()
 
@@ -66,17 +58,13 @@ class ContinueScene:
             self.img_gear_normal = pygame.Surface((btn_w, btn_h))
             self.img_gear_hover = self.img_gear_normal
     def _setup_layout(self):
-        # 1. Nút Back
         self.back_rect = pygame.Rect(15, 15, 80, 60)
-
-        # 2. Ba nút chuyển chế độ (Tabs)
         self.tabs = [
             {"mode": "SOLO_LEVELING", "rect": pygame.Rect(512, 108, 220, 70)}, 
             {"mode": "PLAY_TOGETHER", "rect": pygame.Rect(750, 108, 220, 70)},
             {"mode": "BATTLE_ROYALE", "rect": pygame.Rect(987, 108, 220, 70)}
         ]
 
-        # 3. Năm ô Save (Slots)
         self.slots = []
         start_x = 537
         start_y = 235
@@ -169,32 +157,25 @@ class ContinueScene:
             slot_data = self.filtered_saves[i] if i < len(self.filtered_saves) else None
             
             if slot_data and self.img_slot_frame:
-                # >>>> CHỈNH THÔNG SỐ TẠI ĐÂY <<<<
                 static_off_x = 5  
                 static_off_y = 0  
                 
-                # Lấy khung hình chữ nhật căn giữa
                 static_rect = self.img_slot_frame.get_rect(center=rect.center)
                 
-                # Áp dụng độ lệch thủ công
                 static_rect.x += static_off_x
                 static_rect.y += static_off_y
                 
                 self.screen.blit(self.img_slot_frame, static_rect)
                 
             if slot_data and rect.collidepoint(mouse_pos):
-                # 1. CẤU HÌNH DỊCH CHUYỂN (Sửa số ở đây)
                 manual_offset_x = 5  
                 manual_offset_y = 0  
 
-                # 2. Xử lý ảnh
                 h_img = pygame.transform.scale(self.img_save_highlight, (680, 100))
                 scaled = pygame.transform.scale(h_img, (int(680 * 1.03), int(100 * 1.05)))
                 
-                # 3. Lấy vị trí tâm chuẩn
                 img_rect = scaled.get_rect(center=rect.center)
                 
-                # 4. Cộng thêm độ lệch thủ công
                 img_rect.x += manual_offset_x
                 img_rect.y += manual_offset_y
                 

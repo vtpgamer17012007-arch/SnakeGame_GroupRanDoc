@@ -30,11 +30,8 @@ class Linear_QNet(nn.Module):
         model_folder_path = './models' 
         if not os.path.exists(model_folder_path):
             os.makedirs(model_folder_path)
-
-        # Nếu có truyền số episode, thay đổi tên file
         if episode is not None:
-            file_name = f'model_ep{episode}.pth'
-        
+            file_name = f'model_ep{episode}.pth'       
         final_path = os.path.join(model_folder_path, file_name)
         torch.save(self.state_dict(), final_path)
         print(f"Model saved to {final_path}")

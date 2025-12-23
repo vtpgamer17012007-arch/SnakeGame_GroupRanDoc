@@ -1,0 +1,203 @@
+{
+    "phuc": {
+        "mode": "SOLO_LEVELING",
+        "nickname": "phuc",
+        "avatar": "avatar2",
+        "difficulty": 10,
+        "score": 1,
+        "snake_pos": [
+            [
+                36,
+                17
+            ],
+            [
+                36,
+                18
+            ]
+        ],
+        "direction": [
+            0,
+            -1
+        ],
+        "food_pos": [
+            54,
+            9
+        ],
+        "poops": [
+            {
+                "pos": [
+                    22,
+                    26
+                ],
+                "age": 0
+            }
+        ]
+    },
+    "a": {
+        "mode": "SOLO_LEVELING",
+        "nickname": "phuc",
+        "avatar": "avatar2",
+        "difficulty": 10,
+        "score": 11,
+        "snake_pos": [
+            [
+                17,
+                17
+            ],
+            [
+                16,
+                17
+            ],
+            [
+                15,
+                17
+            ],
+            [
+                14,
+                17
+            ],
+            [
+                13,
+                17
+            ],
+            [
+                12,
+                17
+            ],
+            [
+                11,
+                17
+            ],
+            [
+                11,
+                16
+            ],
+            [
+                11,
+                15
+            ],
+            [
+                11,
+                14
+            ],
+            [
+                11,
+                13
+            ],
+            [
+                11,
+                12
+            ]
+        ],
+        "direction": [
+            1,
+            0
+        ],
+        "food_pos": [
+            51,
+            17
+        ],
+        "poops": [
+            {
+                "pos": [
+                    22,
+                    26
+                ],
+                "age": 0
+            }
+        ]
+    },
+    "ok": {
+        "mode": "SOLO_LEVELING",
+        "nickname": "Phuc",
+        "avatar": "avatar5",
+        "difficulty": 10,
+        "score": 3,
+        "snake_pos": [
+            [
+                33,
+                17
+            ],
+            [
+                33,
+                16
+            ],
+            [
+                33,
+                15
+            ],
+            [
+                33,
+                14
+            ]
+        ],
+        "direction": [
+            0,
+            1
+        ],
+        "food_pos": [
+            56,
+            30
+        ],
+        "poops": [
+            {
+                "pos": [
+                    44,
+                    12
+                ],
+                "age": 0
+            }
+        ]
+    },
+    "opla": {
+        "mode": "PLAY_TOGETHER",
+        "name1": "meoff",
+        "name2": "cho",
+        "avatar1": "avatar1",
+        "avatar2": "avatar1",
+        "p1_score": 0,
+        "p2_score": 1,
+        "p1_pos": [
+            [
+                38,
+                20
+            ],
+            [
+                37,
+                20
+            ]
+        ],
+        "p2_pos": [
+            [
+                34,
+                10
+            ],
+            [
+                35,
+                10
+            ],
+            [
+                36,
+                10
+            ]
+        ],
+        "p1_dir": [
+            1,
+            0
+        ],
+        "p2_dir": [
+            -1,
+            0
+        ],
+        "p1_alive": true,
+        "p2_alive": true,
+        "food_pos": [
+            27,
+            17
+        ],
+        "poop_pos": [
+            12,
+            21
+        ]
+    }
+}

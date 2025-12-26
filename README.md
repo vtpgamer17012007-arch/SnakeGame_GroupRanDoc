@@ -173,10 +173,10 @@ Giảng viên hướng dẫn: **Thầy [Tên Giảng Viên]**.
 
 ---
 
+<img width="1884" height="822" alt="Giản đồ Grantt - Group Rắn Độc" src="https://github.com/user-attachments/assets/19b312e9-e4d5-4b89-b97d-9ca04284d6db" />
+
+---
+
 <div align="center">
 <sub>Built with ❤️ using Pygame & PyTorch</sub>
 </div>
-
-```
-```
-<img width="1884" height="822" alt="Giản đồ Grantt - Group Rắn Độc" src="https://github.com/user-attachments/assets/19b312e9-e4d5-4b89-b97d-9ca04284d6db" />

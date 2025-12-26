@@ -159,16 +159,18 @@ SnakeGame/
 
 ## 👥 Tác giả
 
-### HCMUS - [TÊN NHÓM CỦA BẠN]
+### HCMUS - NHÓM RẮN ĐỘC
 
 | Thành viên | MSSV | Vai trò chính |
 | --- | --- | --- |
-| **[Tên thành viên 1]** | 2xxxxxxx | Leader, Logic Game Core |
-| **[Tên thành viên 2]** | 2xxxxxxx | AI Engineer, Deep Learning |
-| **[Tên thành viên 3]** | 2xxxxxxx | UI/UX Designer, Assets |
-| **[Tên thành viên 4]** | 2xxxxxxx | Game Modes & Features |
+| **Trần Nguyễn Trường Thịnh** | 25120235 | Logic rắn, Nền móng trò chơi (Game Core) |
+| **Võ Thiên Phúc** | 25120222 | AI Engineer & Deep Learning |
+| **Võ Ngọc Ánh Linh** | 25120202 | Phát triển chế độ 2 người chơi & Nâng cấp Level |
+| **Trần Nguyễn Tấn Phát** | 25120218 | Thiết kế Giao diện Game (UI/UX) |
+| **Trần Ánh Như** | 25120216 | Âm thanh (Sound Manager) & Media |
+| **Văn Quốc Thịnh** | 25120236 | Hệ thống Lưu trữ (Save Game) |
 
-Giảng viên hướng dẫn: **Thầy [Tên Giảng Viên]**.
+Giảng viên hướng dẫn: **Thầy Lê Đức Khoan**.
 
 ---
 
@@ -177,5 +179,7 @@ Giảng viên hướng dẫn: **Thầy [Tên Giảng Viên]**.
 ---
 
 <div align="center">
+<sub>Built with ❤️ by TEAM RẮN ĐỘC</sub>
+<br>
 <sub>Built with ❤️ using Pygame & PyTorch</sub>
 </div>

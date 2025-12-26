@@ -84,7 +84,7 @@ python main.py
 Nếu bạn muốn tự huấn luyện lại mô hình AI từ đầu:
 
 ```bash
-python snake/rl/train_dqn.py
+python -m snake.rl.train_dqn
 
 ```
 
@@ -129,7 +129,8 @@ Mạng được định nghĩa trong `dqn_model.py` với kiến trúc:
 ## 📂 Cấu trúc thư mục
 
 ```text
-SnakeGame/
+SnakeGame_GroupRanDoc/
+├── docs/                    # Tài liệu báo cáo & Hình ảnh demo
 ├── main.py                  # Entry point: Điểm khởi chạy chương trình
 ├── requirements.txt         # Danh sách thư viện cần thiết
 ├── snake/                   # Package mã nguồn chính

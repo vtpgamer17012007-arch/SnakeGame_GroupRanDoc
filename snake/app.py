@@ -160,6 +160,7 @@ class SnakeApp:
                     self.current_scene_obj = SoloLeveling(
                         self.screen, self.nickname_player1, self.avatar_player1, self.difficulty
                     )
+                result = self.current_scene_obj.run()
                 self.current_scene_name = result 
             elif self.current_scene_name == "PLAY_TOGETHER":
                 if not isinstance(self.current_scene_obj, PlayTogether):

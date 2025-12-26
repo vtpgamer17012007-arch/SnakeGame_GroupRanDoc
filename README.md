@@ -14,7 +14,7 @@ Dự án này là phiên bản hiện đại hóa của trò chơi **Rắn Săn 
 
 | Màn hình chính (Intro) | Chế độ AI (Deep Learning) |
 | :---: | :---: |
-| <img src="https://via.placeholder.com/400x250?text=Intro+Scene" width="400" /> | <img src="https://via.placeholder.com/400x250?text=AI+Playing" width="400" /> |
+| <img src="docs/Menu.PNG" width="400" /> | <img src="https://via.placeholder.com/400x250?text=AI+Playing" width="400" /> |
 
 | Chế độ 2 Người (Play Together) | Chế độ Đối Kháng (Battle Royale) |
 | :---: | :---: |

@@ -18,7 +18,7 @@ Dự án này là phiên bản hiện đại hóa của trò chơi **Rắn Săn 
 
 | Chế độ 1 Người | Chế độ 2 Người |
 | :---: | :---: |
-| <img src="docs/OnePLayerGamePlay.PNG" width="400" /> | <img src="docs/TwoPlayerGamePlay.PNG" width="400" /> |
+| <img src="docs/OnePlayerGamePlay.PNG" width="400" /> | <img src="docs/TwoPlayerGamePlay.PNG" width="400" /> |
 
 ---
 

@@ -51,9 +51,8 @@ Dự án này là phiên bản hiện đại hóa của trò chơi **Rắn Săn 
 
 ### 1. Clone dự án
 ```bash
-git clone [https://github.com/your-username/SnakeGame-Project.git](https://github.com/your-username/SnakeGame-Project.git)
-cd SnakeGame-Project
-
+git clone https://github.com/vtpgamer17012007-arch/SnakeGame_GroupRanDoc
+cd SnakeGame_GroupRanDoc
 ```
 
 ### 2. Cài đặt thư viện
